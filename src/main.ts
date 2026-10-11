@@ -5,6 +5,7 @@ import { exportBytes, renderToCanvas, type ImageFormat } from './export'
 import {
   PROJECT_EXTENSION,
   copyCanvas,
+  type FileType,
   isProjectFile,
   isTauri,
   pickFile,
@@ -13,6 +14,7 @@ import {
   write,
 } from './files'
 import { listenForImages } from './input'
+import { EMPTY_DOC } from './model'
 import { Store } from './store'
 import { StyleBar } from './stylebar'
 import { Viewport, isTextTarget } from './viewport'
@@ -79,7 +81,8 @@ editor.setTool('select')
 
 store.subscribe(() => {
   const hasImage = store.doc.image !== null
-  empty.hidden = hasImage
+  // The paste hint is for a blank canvas; one stroke on it is enough to make it go.
+  empty.hidden = hasImage || store.doc.objects.length > 0
   zoom.hidden = !hasImage
 })
 
@@ -166,17 +169,20 @@ const copyImage = (): Promise<void> =>
     return 'Copied to clipboard'
   })
 
-const exportImage = (): Promise<void> =>
+const EXPORT_TYPES: Record<ImageFormat, FileType> = {
+  png: { name: 'PNG image', extensions: ['png'] },
+  jpg: { name: 'JPEG image', extensions: ['jpg', 'jpeg'] },
+  svg: { name: 'SVG drawing', extensions: ['svg'] },
+  pdf: { name: 'PDF document', extensions: ['pdf'] },
+}
+
+/** Export in one format, or let the save dialog's file extension decide when none is given. */
+const exportImage = (format?: ImageFormat): Promise<void> =>
   report(async () => {
     if (isEmpty()) return 'Nothing to export yet'
     const path = await saveAs(
       'screenshot',
-      [
-        { name: 'PNG image', extensions: ['png'] },
-        { name: 'JPEG image', extensions: ['jpg', 'jpeg'] },
-        { name: 'SVG drawing', extensions: ['svg'] },
-        { name: 'PDF document', extensions: ['pdf'] },
-      ],
+      format ? [EXPORT_TYPES[format]] : Object.values(EXPORT_TYPES),
       (extension) => exportBytes(store.doc, (extension === 'jpeg' ? 'jpg' : extension) as ImageFormat),
     )
     return path && `Exported ${path}`
@@ -197,17 +203,48 @@ const saveProject = (): Promise<void> =>
     return 'Project saved'
   })
 
-for (const [id, action] of [
-  ['copy', copyImage],
-  ['export', exportImage],
-  ['save', saveProject],
-] as const) {
-  const button = $(id)
-  button.addEventListener('click', () => {
-    void action()
-    button.blur()
+const outputMenu = $('output')
+/** Hide the menu after a choice; hovering alone would keep it open until the pointer leaves. */
+function closeOutputMenu(): void {
+  outputMenu.classList.remove('open')
+  outputMenu.classList.add('dismissed')
+}
+outputMenu.addEventListener('pointerleave', () => outputMenu.classList.remove('dismissed'))
+// Hover opens the menu; a click does too, for touch screens and for anyone who expects one.
+$('output-button').addEventListener('click', (e) => {
+  outputMenu.classList.remove('dismissed')
+  outputMenu.classList.toggle('open')
+  ;(e.currentTarget as HTMLElement).blur()
+})
+window.addEventListener('pointerdown', (e) => {
+  if (!outputMenu.contains(e.target as Node)) outputMenu.classList.remove('open')
+})
+for (const item of outputMenu.querySelectorAll<HTMLButtonElement>('[data-output]')) {
+  item.addEventListener('click', () => {
+    const choice = item.dataset.output!
+    closeOutputMenu()
+    item.blur()
+    if (choice === 'copy') void copyImage()
+    else if (choice === 'save') void saveProject()
+    else void exportImage(choice as ImageFormat)
   })
 }
+
+$('clear').addEventListener('click', async (e) => {
+  ;(e.currentTarget as HTMLElement).blur()
+  if (isEmpty()) return
+  // The button sits among the tools, so a misclick must not cost the work.
+  const sure = await choose('Delete the image and every annotation?', [
+    { value: 'cancel', label: 'Cancel', primary: true },
+    { value: 'clear', label: 'Delete everything' },
+  ])
+  if (sure !== 'clear') return
+  store.commit(EMPTY_DOC)
+  viewport.reset()
+  projectPath = null
+  editor.setTool('select')
+  showStatus('Cleared. Ctrl+Z brings it back')
+})
 
 window.addEventListener('keydown', (e) => {
   // While a question is on screen the keyboard belongs to it.
@@ -226,7 +263,9 @@ function viewportShortcut(e: KeyboardEvent): boolean {
       void copyImage()
       return true
     case 'KeyE':
-      void exportImage()
+      // The desktop save dialog offers every format; a browser has none, so show the menu instead.
+      if (isTauri) void exportImage()
+      else outputMenu.classList.add('open')
       return true
     case 'KeyS':
       void saveProject()

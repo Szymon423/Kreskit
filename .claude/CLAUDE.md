@@ -1,6 +1,6 @@
 # Kreskit
 
-Kreskit is a desktop app for annotating screenshots: paste an image, mark it up with shapes, text and CAD-style dimensions, then copy or export it. The name comes from Polish "kreska" (a stroke, a line). It was called "Shotmark" while it was being built; that name is taken, so do not bring it back.
+Kreskit is a desktop app for annotating screenshots: paste an image, mark it up with shapes, text and CAD-style dimensions, then copy or export it. The same editor also runs in the browser, published with a landing page at https://szymon423.github.io/Kreskit/ (the app is under `app/`). The name comes from Polish "kreska" (a stroke, a line). It was called "Shotmark" while it was being built; that name is taken, so do not bring it back.
 
 The owner is Szymon (GitHub `Szymon423`). He develops this on more than one machine, so everything needed to continue lives in this directory and is committed to git.
 
@@ -15,6 +15,7 @@ The owner is Szymon (GitHub `Szymon423`). He develops this on more than one mach
 
 - **Shell**: Tauri 2 (Rust), single instance. Code in `src-tauri/`.
 - **UI**: vanilla TypeScript + Vite. No UI framework. Konva renders the canvas.
+- **Website**: a plain-HTML landing page (`site/`) plus a browser build of the app, published by GitHub Pages from `.github/workflows/pages.yml` on every push to `main`.
 - **Export**: Konva for PNG/JPG and clipboard, a hand-written SVG serializer, PDF generated from that SVG with `jsPDF` + `svg2pdf.js`.
 
 ## Commands
@@ -51,8 +52,13 @@ src/textedit.ts   In-place text editing
 src/dialog.ts     In-app question dialog
 src-tauri/        Rust shell: window, plugins, capabilities, bundling
 public/fonts/     DejaVu Sans, embedded into PDF exports
+public/icon.svg   Browser-tab icon of the app
+src-tauri/app-icon.svg   Icon source (see "Icon" below)
+src-tauri/icons/  Generated from the icon source; do not edit by hand
 site/             Landing page of the website (plain HTML, no build step)
 scripts/          Build helpers; assemble-site.mjs puts the landing page around the web build
+example/          Screenshots and a sample project, used by the README and the landing page
+LICENSE           MIT
 .github/workflows/pages.yml   Publishes dist-web/ to GitHub Pages on every push to main
 ```
 
@@ -64,6 +70,27 @@ scripts/          Build helpers; assemble-site.mjs puts the landing page around 
 - **Project files (`.kit`) must stay readable.** They were saved as `.shot` until 2026-10-11, and that extension must keep opening. They are JSON with `app`, `version`, the base image and the objects. Files written with `app: "shotmark"` are still accepted. If the format has to change, bump `version` and keep loading the old one.
 - **A dimension is one composite object** with its own handles (two measured points, an offset handle), not a group of lines and text.
 - **Linux/NVIDIA workaround**: `src-tauri/src/main.rs` disables WebKitGTK's DMABUF renderer when the proprietary NVIDIA driver is present. Without it the app dies at startup on Wayland with "Error 71 (Protocol error)". Do not remove it.
+
+## Website and browser build
+
+- **One codebase, two targets.** The browser version is the same `src/` built with `npm run build:web`. Anything desktop-only (native dialogs, native clipboard, file writes) sits behind `isTauri` in `src/files.ts` and needs a browser fallback. After a change to input, output or shortcuts, think about both targets.
+- **The web build uses a relative base** (`--base=./`), so it works under `/Kreskit/app/` and would work unchanged under a custom domain. Do not introduce absolute URLs to the app's own files; use `import.meta.env.BASE_URL`.
+- **The landing page is one hand-written file**, `site/index.html`, with inline CSS and no build step. Its images are copied from `example/` by `scripts/assemble-site.mjs`.
+- **`example/kreskit.png` is shown in the README and on the landing page.** When the toolbar or the look of the app changes, tell Szymon it needs retaking; only he can take it.
+- **Deploys happen on push to `main`.** A failed run is restarted with "Run workflow" in the Actions tab, not "Re-run jobs" (see the comment in the workflow).
+
+## Icon
+
+The source is `src-tauri/app-icon.svg`. After changing it:
+
+```sh
+npx tauri icon src-tauri/app-icon.svg
+rm -rf src-tauri/icons/android src-tauri/icons/ios
+cp src-tauri/app-icon.svg public/icon.svg
+cp src-tauri/app-icon.svg site/icon.svg
+```
+
+On Linux the icon only shows for the installed app (see `docs/setup.md`), not for a binary run from the build folder.
 
 ## Code style
 
@@ -79,7 +106,7 @@ Match the surrounding code: no semicolons, single quotes, 2-space indent, small 
 - **Commit and push only when asked.** The remote is public-facing; never force-push, and never rewrite history that is already pushed.
 - **Do not rename or move the project folder** from inside a session. It breaks the running dev server, the editor workspace and the Claude Code session history, which is keyed to the folder path.
 - **Keep scope tight.** Do the thing asked; mention related problems you notice instead of fixing them unasked.
-- **Keep the docs in step.** When a feature lands or a gap is found, update `docs/roadmap.md`. When a shortcut or feature changes, update the tables in `README.md`.
+- **Keep the docs in step.** When a feature lands or a gap is found, update `docs/roadmap.md`. When a shortcut or feature changes, update the tables in `README.md`, and the feature cards in `site/index.html` if they no longer describe the app.
 - **No secrets, signing keys or machine-specific paths** in the repository. Machine-local Claude settings go in `.claude/settings.local.json`, which is git-ignored.
 
 ## Working with Szymon

@@ -3,4 +3,6 @@
 import { cpSync } from 'node:fs'
 
 cpSync('site', 'dist-web', { recursive: true })
-cpSync('example/kreskit.png', 'dist-web/kreskit.png')
+for (const image of ['kreskit.png', '01.png', '02.png']) {
+  cpSync(`example/${image}`, `dist-web/${image}`)
+}

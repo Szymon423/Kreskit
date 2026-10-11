@@ -171,6 +171,70 @@ kbd {
   color: #fff;
 }
 
+/* A toolbar button that drops a list of actions down on hover (or on click, for touch). */
+.menu {
+  position: relative;
+}
+
+.menu-items {
+  position: absolute;
+  top: 100%;
+  right: -4px;
+  display: none;
+  flex-direction: column;
+  /* Padding, not margin, bridges the gap so the pointer never leaves the menu on its way down. */
+  padding-top: 10px;
+}
+
+.menu:hover:not(.dismissed) .menu-items,
+.menu.open .menu-items {
+  display: flex;
+}
+
+.menu-items::before {
+  content: '';
+  position: absolute;
+  inset: 10px 0 0;
+  z-index: -1;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.2);
+}
+
+#toolbar .menu-items button {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  width: auto;
+  height: 30px;
+  margin: 0 4px;
+  padding: 0 10px;
+  font: inherit;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+#toolbar .menu-items button:first-child {
+  margin-top: 4px;
+}
+
+#toolbar .menu-items button:last-child {
+  margin-bottom: 4px;
+}
+
+#toolbar .menu-items hr {
+  width: auto;
+  height: 1px;
+  margin: 4px 0;
+}
+
+.menu-items kbd {
+  border: 0;
+  background: none;
+  color: var(--muted);
+}
+
 /* An on/off switch rather than a tool: lit when on, dimmed when off. */
 #toolbar button.toggle {
   color: var(--muted);

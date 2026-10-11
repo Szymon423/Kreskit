@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <title>Kreskit</title>
   </head>
   <body>
@@ -28,9 +29,21 @@
       <hr />
       <button id="snap" class="toggle"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v7a5 5 0 0010 0V3h-3v7a2 2 0 01-4 0V3z"/><path d="M5 6.5h3M12 6.5h3"/></svg></button>
       <hr />
-      <button id="copy" title="Copy image to clipboard (Ctrl+C)" aria-label="Copy image to clipboard"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M13 7V4.5A1.5 1.5 0 0011.500 3h-7A1.500 1.500 0 003 4.500v7A1.500 1.500 0 004.500 13H7"/></svg></button>
-      <button id="export" title="Export as PNG, JPG, SVG or PDF (Ctrl+E)" aria-label="Export image"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v10M6 9l4 4 4-4M4 16h12"/></svg></button>
-      <button id="save" title="Save editable project (Ctrl+S)" aria-label="Save project"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3h9l3 3v11H4z"/><path d="M7 3v4h5V3M7 17v-6h6v6"/></svg></button>
+      <div id="output" class="menu">
+        <button id="output-button" title="Copy, export or save" aria-label="Copy, export or save" aria-haspopup="menu"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v10M6 9l4 4 4-4M4 16h12"/></svg></button>
+        <div class="menu-items" role="menu">
+          <button role="menuitem" data-output="copy">Copy image <kbd>Ctrl+C</kbd></button>
+          <hr />
+          <button role="menuitem" data-output="png">Export as PNG</button>
+          <button role="menuitem" data-output="jpg">Export as JPG</button>
+          <button role="menuitem" data-output="svg">Export as SVG</button>
+          <button role="menuitem" data-output="pdf">Export as PDF</button>
+          <hr />
+          <button role="menuitem" data-output="save">Save editable project <kbd>Ctrl+S</kbd></button>
+        </div>
+      </div>
+      <hr />
+      <button id="clear" title="Clear everything and start over" aria-label="Clear everything"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5l10 10M15 5L5 15"/></svg></button>
     </div>
     <div id="stylebar" hidden></div>
     <div id="status" hidden></div>

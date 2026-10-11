@@ -22,6 +22,8 @@ Most screenshots need a quick edit before they are shared: highlight something, 
 | Output | Copy to clipboard, PNG/JPG, SVG/PDF, editable `.kit` project file |
 | Tools | Select, rectangle, ellipse, line, arrow, pen, highlighter, text, dimensions |
 | Dimensions | Linear at any angle, horizontal/vertical lock with Shift, radius, diameter |
+| Website | Landing page plus the editor running in the browser, on GitHub Pages; a custom domain maybe later |
+| License | MIT |
 | Image operations | Crop, resize, rotate in 90° steps (not built yet) |
 | Editing | Undo/redo, snapping with guides, zoom/pan, multi-select, per-tool remembered styles |
 
@@ -38,4 +40,6 @@ These came out of testing rounds. Do not change them without asking.
 - **Pen and highlighter strokes are lightly smoothed** on release (`SMOOTHING` in `src/editor.ts`).
 - **A reset-view button** sits next to the zoom percentage and does the same as `Ctrl+0`.
 - **`Ctrl+C` always copies the whole flattened image**, never the selected objects; `Ctrl+D` duplicates objects.
-- **The empty-state hint** ("Ctrl+V to paste a screenshot") disappears once an image is loaded.
+- **One output menu** in the toolbar replaces the separate copy, export and save buttons. It opens on hover (or click) and lists Copy image, Export as PNG/JPG/SVG/PDF and Save editable project.
+- **A clear button** (X, at the right end of the toolbar) empties the canvas and brings back the paste hint. It asks first, with Cancel as the default, because a misclick must not cost the work; `Ctrl+Z` still restores everything afterwards.
+- **The empty-state hint** ("Ctrl+V to paste a screenshot") disappears once an image is loaded or anything is drawn on the empty canvas, and returns when the canvas is empty again.

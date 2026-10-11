@@ -2,6 +2,7 @@
 name = "kreskit"
 version = "0.1.0"
 description = "Fast screenshot annotation"
+license = "MIT"
 edition = "2021"
 
 [lib]

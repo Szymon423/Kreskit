@@ -4,9 +4,12 @@
 [![Built with Claude Code](https://img.shields.io/badge/built%20with-Claude%20Code-d97757)](https://claude.com/claude-code)
 ![Tauri 2](https://img.shields.io/badge/Tauri-2-24c8db)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178c6)
-![Platform: Linux](https://img.shields.io/badge/platform-Linux-2fb344)
+![Platform: Linux and web](https://img.shields.io/badge/platform-Linux%20%7C%20web-2fb344)
+[![License: MIT](https://img.shields.io/badge/license-MIT-6b7078)](LICENSE)
 
 Fast screenshot annotation. Paste a screenshot, mark it up, and copy or export the result. Every annotation stays editable, so nothing is baked into the image until you export it.
+
+**[Try it in your browser](https://szymon423.github.io/Kreskit/app/)** · [Website](https://szymon423.github.io/Kreskit/)
 
 <p align="center">
   <img src="example/kreskit.png" alt="The Kreskit window: a floating toolbar above a screenshot annotated with dimensions, an arrow, a note, a highlight and a circle" width="820">
@@ -33,8 +36,9 @@ The annotated screenshot above uses most of these:
 - **Get an image in quickly**: paste from the clipboard, drop a file onto the window, or open one with the file picker.
 - **Export**: PNG, JPG, SVG or PDF, or copy the flattened image straight to the clipboard.
 - **Project files**: save your work as a `.kit` file and reopen it later with every annotation still editable.
+- **Hard to lose work**: pasting over existing work asks whether to add the image, replace everything or cancel, and clearing the canvas asks first too.
 
-Kreskit is a desktop app built with [Tauri 2](https://tauri.app), TypeScript, [Vite](https://vite.dev) and [Konva](https://konvajs.org).
+Kreskit is a desktop app, and the same editor runs in the browser with nothing to install; images you open there stay on your computer. It is built with [Tauri 2](https://tauri.app), TypeScript, [Vite](https://vite.dev) and [Konva](https://konvajs.org).
 
 ## How this was made
 
@@ -44,7 +48,7 @@ What that means if you use it:
 
 - It is a personal tool that works for its author, not a reviewed or audited product.
 - There are no automated tests.
-- It has only been built and run on Linux (Fedora, Wayland). Windows and macOS should work, since Tauri supports them, but nobody has tried.
+- The desktop app has only been built and run on Linux (Fedora, Wayland). Windows and macOS should work, since Tauri supports them, but nobody has tried.
 
 Bug reports are welcome.
 
@@ -69,9 +73,23 @@ npm run tauri dev
 npm run tauri build
 ```
 
-The installers and binary end up in `src-tauri/target/release/bundle/`.
+The binary ends up in `src-tauri/target/release/` and the packages in `src-tauri/target/release/bundle/`.
 
-The frontend also runs in a plain browser with `npm run dev` (at http://localhost:1420), with the limits a browser imposes: exports download in the first offered format instead of asking where to save.
+### Install on Linux
+
+Install the package for your distribution, for example on Fedora:
+
+```sh
+sudo dnf install src-tauri/target/release/bundle/rpm/Kreskit-0.1.0-1.x86_64.rpm
+```
+
+Kreskit then appears in the application menu and starts with `kreskit` from a terminal. A binary run straight from the build folder works too, but shows a generic icon, because Linux desktops take icons from installed applications.
+
+### Browser version and website
+
+The frontend also runs in a plain browser with `npm run dev` (at http://localhost:1420). Files are downloaded instead of saved through a dialog, and a few shortcuts belong to the browser (`Ctrl+1`, for one).
+
+`npm run build:web` builds the whole website into `dist-web/`: the landing page from `site/` at the root and the editor under `app/`. Every push to `main` publishes it to GitHub Pages through `.github/workflows/pages.yml`.
 
 ## Keyboard shortcuts
 
@@ -100,7 +118,7 @@ The frontend also runs in a plain browser with `npm run dev` (at http://localhos
 | `Ctrl+V` | Paste an image |
 | `Ctrl+O` | Open an image or `.kit` project |
 | `Ctrl+S` | Save the editable project |
-| `Ctrl+E` | Export as PNG, JPG, SVG or PDF |
+| `Ctrl+E` | Export as PNG, JPG, SVG or PDF (in the browser version: open the output menu) |
 | `Ctrl+C` | Copy the image to the clipboard |
 
 ### Editing
@@ -114,6 +132,8 @@ The frontend also runs in a plain browser with `npm run dev` (at http://localhos
 | `Ctrl+]` / `Ctrl+[` | Move forward / backward (add `Shift` for front / back) |
 | `Delete` / `Backspace` | Delete the selection |
 | Arrow keys | Nudge the selection by 1 px (`Shift` for 10 px) |
+
+Copy, every export format and saving are also in the output menu (the download icon in the toolbar). The X next to it clears the canvas after asking.
 
 ### View
 
@@ -137,8 +157,12 @@ src/              Frontend (TypeScript)
   dimension.ts    Dimension geometry
   export.ts       PNG, JPG, SVG and PDF output
   files.ts        Save/open dialogs, clipboard and .kit project files
-src-tauri/        Rust shell: window, plugins, bundling config
-public/fonts/     Font embedded into PDF exports
+src-tauri/        Rust shell: window, plugins, bundling config, icons
+public/           Font embedded into PDF exports, browser-tab icon
+site/             Landing page of the website
+scripts/          Build helper that assembles the website
+example/          Screenshots and a sample project
+.github/          Workflow that publishes the website
 ```
 
 ## Notes
@@ -146,3 +170,7 @@ public/fonts/     Font embedded into PDF exports
 - PDF exports set all text in DejaVu Sans, whatever font the text object uses, because PDF's built-in fonts only cover Western European letters.
 - A `.kit` file is JSON with the base image and any placed pictures embedded as PNG data URLs. Projects saved as `.shot` by earlier versions still open.
 - The files in [`example/`](example/) are the app screenshot, the plain screenshot, its annotated export and the editable project shown at the top of this page.
+
+## License
+
+Kreskit is released under the [MIT License](LICENSE): use it, change it and share it freely, with no warranty. The bundled DejaVu Sans font in `public/fonts/` comes under its own free license; see [dejavu-fonts.github.io](https://dejavu-fonts.github.io/License.html).

@@ -12,17 +12,21 @@ Last updated: 2026-10-11. Update this file whenever something here changes.
 - Style bar: colour, fill, width, opacity, font and size; each tool remembers its last style. It also restyles a text or dimension value while it is being typed or re-edited.
 - Snapping with guide lines, plus a toggle.
 - Images added on top of the base image as ordinary movable objects.
+- Toolbar: one output menu (copy, export per format, save project) and a clear-everything button.
 - Output: copy to clipboard, export PNG/JPG/SVG/PDF, save and reopen `.kit` projects (older `.shot` files still open).
-- Linux desktop build compiles and runs (Fedora, Wayland, NVIDIA).
+- The paste hint shows only on a blank canvas; it goes as soon as anything is drawn.
+- App icon: a K made of a dimension line, an arrow and a stroke; also the browser-tab icon.
+- Linux desktop build compiles and runs (Fedora, Wayland, NVIDIA). The RPM installs and launches from the app menu and the terminal.
+- MIT license.
 
-## Website (in progress)
+## Website
 
-The site is published by GitHub Pages at `https://szymon423.github.io/Kreskit/`, with the live app under `app/`. The web build uses a relative base, so it also works unchanged under a custom domain.
+Live at `https://szymon423.github.io/Kreskit/`, with the editor under `app/`. Published by GitHub Pages on every push to `main`. The web build uses a relative base, so it would work unchanged under a custom domain.
 
-1. **Deploy** (done in code, not yet seen live): `npm run build:web`, `site/`, `.github/workflows/pages.yml`. Needs Pages switched to "GitHub Actions" in the repository settings.
-2. **Browser gaps in the app**: export downloads PNG without asking for a format; `Ctrl+1` and possibly other shortcuts belong to the browser; copy to clipboard is untried in real browsers.
-3. **Proper landing page**: `site/index.html` is a placeholder with one screenshot and two buttons.
-4. **Custom domain**: maybe later; not bought.
+- **Landing page** (`site/index.html`): header with icon and light/dark toggle (light by default, choice remembered), hero, app screenshot, six feature cards, before/after pair, "How it was made", footer with the license.
+- **Browser gaps in the app, still open**: `Ctrl+1` and possibly other shortcuts belong to the browser; copy to clipboard, paste and drag-and-drop have not been reported on from a real browser yet.
+- **Custom domain**: not bought. On 2026-10-11 `kreskit.com`, `.app`, `.dev`, `.pl`, `.io` and `.org` were all unregistered. Connecting one needs DNS records at the registrar, the domain entered under Settings → Pages, and a `CNAME` file added to the site.
+- The deploy actions were bumped to their current major versions on 2026-10-11; the first run after that bump is the test of it.
 
 ## Open, from the original plan
 
@@ -41,8 +45,6 @@ The site is published by GitHub Pages at `https://szymon423.github.io/Kreskit/`,
 - The base image is fixed in place and not selectable; only images added later are movable.
 - PDF export sets all text in DejaVu Sans, whatever font the object uses.
 - No automated tests. Export was checked once with a throwaway script; interaction is tested by hand.
-- The app icon (`src-tauri/app-icon.svg`) is a quick placeholder.
-- The README has no license; the project has no `LICENSE` file.
 
 ## Ideas, never planned
 
@@ -51,7 +53,12 @@ The site is published by GitHub Pages at `https://szymon423.github.io/Kreskit/`,
 - Angular dimensions.
 - Taking the screenshot from inside the app.
 
+## Considered and declined
+
+- **Opening screenshots in Kreskit from GNOME's screenshot notification.** The notification belongs to GNOME Shell, so a button on it needs a shell extension. The lighter options (a launch shortcut with auto-paste from the clipboard, or making Kreskit the default PNG app) were offered and Szymon turned them down as not good enough. The app also still ignores a file path passed on the command line, so "Open With" does not work.
+
 ## Not verified
 
 - Windows and macOS: never built or run.
-- The rename from Shotmark to Kreskit: builds and type-checks, but the app has not been launched since. The app identifier changed to `dev.kreskit.app`, so remembered styles and the snapping setting start fresh.
+- The new app icon in the GNOME dock and overview: the package contains it, but nobody has confirmed how it looks there.
+- The copyright holder in `LICENSE` and the site footer is written as "Szymon423"; Szymon may want his full name there.

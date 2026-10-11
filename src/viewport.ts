@@ -58,10 +58,19 @@ export class Viewport {
     this.bitmap = source
     this.image?.destroy()
     this.image = null
-    if (!source) return
+    if (!source) {
+      this.reset()
+      return
+    }
     this.image = new Konva.Image({ image: source, width: source.width, height: source.height })
     this.imageLayer.add(this.image)
     this.fit()
+  }
+
+  /** Back to the view the app starts with, so a cleared canvas really is a fresh one. */
+  reset(): void {
+    this.applyScale(1)
+    this.stage.position({ x: 0, y: 0 })
   }
 
   /** Scale the image down to fit the window, never above 100%. */

@@ -1,5 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-  <rect x="64" y="64" width="896" height="896" rx="200" fill="#2f6fed"/>
-  <rect x="232" y="296" width="560" height="400" rx="36" fill="none" stroke="#fff" stroke-width="56"/>
-  <path d="M232 800h560M232 760v80M792 760v80" fill="none" stroke="#fff" stroke-width="40" stroke-linecap="round"/>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3b82f6"/>
+      <stop offset="1" stop-color="#1e3a9f"/>
+    </linearGradient>
+  </defs>
+  <!-- The letter K drawn with the app's own marks: a dimension line for the stem, an arrow and a stroke for the arms. -->
+  <rect x="64" y="64" width="896" height="896" rx="210" fill="url(#bg)"/>
+  <g fill="none" stroke="#fff" stroke-width="76">
+    <path d="M352 268v488"/>
+    <path d="M262 268h180M262 756h180" stroke-width="44" stroke-linecap="round"/>
+    <path d="M410 512l300 250" stroke-linecap="round"/>
+  </g>
+  <path d="M410 512l210-175" fill="none" stroke="#ffd60a" stroke-width="76" stroke-linecap="round"/>
+  <path d="M742 236L543 286l123 148z" fill="#ffd60a" stroke="#ffd60a" stroke-width="24" stroke-linejoin="round"/>
 </svg>

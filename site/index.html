@@ -1,93 +1,393 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="light dark" />
-    <meta name="description" content="Kreskit: fast screenshot annotation with shapes, arrows, text and CAD-style dimensions." />
-    <title>Kreskit</title>
+    <meta name="description" content="Kreskit: fast screenshot annotation with shapes, arrows, text and CAD-style dimensions. Free, open source, and it runs in your browser." />
+    <link rel="icon" type="image/svg+xml" href="icon.svg" />
+    <title>Kreskit: fast screenshot annotation</title>
+    <script>
+      // Applied before the page paints, so a visitor who chose dark never sees a light flash.
+      try {
+        document.documentElement.dataset.theme = localStorage.getItem('kreskit.site.theme') || 'light'
+      } catch {
+        // Without storage the page simply stays light.
+      }
+    </script>
     <style>
       :root {
-        --bg: #f4f5f7;
-        --fg: #1d1f23;
-        --muted: #6b7078;
-        --border: #cfd2d8;
+        --bg: #f6f8fc;
+        --fg: #171a21;
+        --muted: #5c6370;
+        --card: #ffffff;
+        --border: #dfe3ea;
         --accent: #2f6fed;
-        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-        color: var(--fg);
-        background: var(--bg);
+        --glow-blue: rgb(59 130 246 / 0.2);
+        --glow-yellow: rgb(255 214 10 / 0.2);
+        --shadow: rgb(23 26 33 / 0.16);
+        color-scheme: light;
       }
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --bg: #1b1c1f;
-          --fg: #e6e7ea;
-          --muted: #8d929b;
-          --border: #3d4047;
-          --accent: #6c9bff;
-        }
+      :root[data-theme='dark'] {
+        --bg: #0f1117;
+        --fg: #e8eaef;
+        --muted: #9198a5;
+        --card: #191c24;
+        --border: #2a2e39;
+        --accent: #6c9bff;
+        --glow-blue: rgb(59 130 246 / 0.24);
+        --glow-yellow: rgb(255 214 10 / 0.08);
+        --shadow: rgb(0 0 0 / 0.5);
+        color-scheme: dark;
+      }
+
+      * {
+        box-sizing: border-box;
       }
       body {
-        max-width: 880px;
+        margin: 0;
+        min-height: 100vh;
+        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        line-height: 1.55;
+        color: var(--fg);
+        background:
+          radial-gradient(900px 520px at 12% -8%, var(--glow-blue), transparent 62%),
+          radial-gradient(760px 460px at 96% 2%, var(--glow-yellow), transparent 62%),
+          var(--bg);
+        background-repeat: no-repeat;
+      }
+      a {
+        color: var(--accent);
+      }
+      .wrap {
+        max-width: 1040px;
         margin: 0 auto;
-        padding: 56px 16px;
+        padding: 0 16px;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 20px;
+        padding-bottom: 20px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--fg);
+        text-decoration: none;
+      }
+      .brand img {
+        width: 36px;
+        height: 36px;
+      }
+      nav {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      nav a,
+      #theme {
+        display: grid;
+        place-items: center;
+        height: 36px;
+        padding: 0 12px;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        background: none;
+        color: var(--fg);
+        font: inherit;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        white-space: nowrap;
+        cursor: pointer;
+      }
+      @media (max-width: 480px) {
+        nav {
+          gap: 0;
+        }
+        nav a {
+          padding: 0 8px;
+        }
+      }
+      nav a:hover,
+      #theme:hover {
+        border-color: var(--border);
+        background: var(--card);
+      }
+      #theme {
+        width: 36px;
+        padding: 0;
+      }
+      /* The button shows what a click switches to. */
+      :root[data-theme='light'] #theme .sun,
+      :root[data-theme='dark'] #theme .moon {
+        display: none;
+      }
+
+      .hero {
+        padding: 48px 0 40px;
         text-align: center;
-        line-height: 1.5;
+      }
+      .hero > img {
+        width: 96px;
+        height: 96px;
+        filter: drop-shadow(0 10px 24px var(--shadow));
       }
       h1 {
-        margin: 0 0 8px;
-        font-size: 44px;
+        margin: 20px auto 12px;
+        max-width: 760px;
+        font-size: clamp(32px, 6vw, 52px);
+        line-height: 1.1;
         letter-spacing: -0.02em;
+        text-wrap: balance;
       }
       .lead {
         margin: 0 auto 28px;
-        max-width: 560px;
+        max-width: 600px;
         font-size: 18px;
         color: var(--muted);
+        text-wrap: pretty;
       }
       .actions {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
         gap: 12px;
-        margin-bottom: 12px;
       }
-      .actions a {
-        padding: 10px 20px;
+      .button {
+        padding: 12px 22px;
         border: 1px solid var(--border);
-        border-radius: 8px;
+        border-radius: 10px;
+        background: var(--card);
         color: var(--fg);
         font-weight: 600;
         text-decoration: none;
       }
-      .actions a.primary {
-        border-color: var(--accent);
-        background: var(--accent);
+      .button.primary {
+        border-color: transparent;
+        background: linear-gradient(135deg, #3b82f6, #1e3a9f);
         color: #fff;
+        box-shadow: 0 8px 22px rgb(47 111 237 / 0.35);
       }
       .note {
-        margin: 0 0 36px;
+        margin: 14px 0 0;
         font-size: 14px;
         color: var(--muted);
       }
-      img {
-        max-width: 100%;
+
+      /* The screenshot is a window capture that already carries its own shadow and margin. */
+      .shot {
+        display: block;
+        width: 100%;
         height: auto;
-        border-radius: 10px;
-        box-shadow: 0 12px 40px rgb(0 0 0 / 0.25);
+      }
+
+      section {
+        padding: 56px 0 0;
+      }
+      h2 {
+        margin: 0 0 8px;
+        font-size: 28px;
+        letter-spacing: -0.01em;
+        text-align: center;
+      }
+      .sub {
+        margin: 0 auto 28px;
+        max-width: 620px;
+        color: var(--muted);
+        text-align: center;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 16px;
+      }
+      .card {
+        padding: 20px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: var(--card);
+      }
+      .card svg {
+        width: 28px;
+        height: 28px;
+        color: var(--accent);
+      }
+      .card h3 {
+        margin: 10px 0 4px;
+        font-size: 17px;
+      }
+      .card p {
+        margin: 0;
+        font-size: 15px;
+        color: var(--muted);
+      }
+
+      .pair {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 16px;
+      }
+      figure {
+        margin: 0;
+      }
+      figure img {
+        display: block;
+        width: 100%;
+        height: auto;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+      }
+      figcaption {
+        margin-top: 8px;
+        font-size: 14px;
+        color: var(--muted);
+        text-align: center;
+      }
+
+      .made {
+        max-width: 720px;
+        margin: 0 auto;
+        text-align: center;
+      }
+      .made p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      footer {
+        margin-top: 64px;
+        padding: 24px 0 32px;
+        border-top: 1px solid var(--border);
+        font-size: 14px;
+        color: var(--muted);
+      }
+      footer .wrap {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 8px 24px;
+      }
+      footer p {
+        margin: 0;
       }
     </style>
   </head>
   <body>
-    <h1>Kreskit</h1>
-    <p class="lead">
-      Fast screenshot annotation. Paste a screenshot, mark it up with shapes, arrows, text and
-      CAD-style dimensions, then copy or export it.
-    </p>
-    <div class="actions">
-      <a class="primary" href="app/">Try it in your browser</a>
-      <a href="https://github.com/Szymon423/Kreskit">Source on GitHub</a>
-    </div>
-    <p class="note">The browser version runs entirely on your computer. Your images are never uploaded.</p>
-    <img src="kreskit.png" width="1152" height="849" alt="The Kreskit window: a floating toolbar above a screenshot annotated with dimensions, an arrow, a note, a highlight and a circle" />
+    <header class="wrap">
+      <a class="brand" href="./"><img src="icon.svg" alt="" />Kreskit</a>
+      <nav>
+        <a href="app/">Open the app</a>
+        <a href="https://github.com/Szymon423/Kreskit">GitHub</a>
+        <button id="theme" aria-label="Switch between light and dark mode" title="Switch between light and dark mode">
+          <svg class="moon" viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 11.5A7 7 0 018.500 3.500a7 7 0 108 8z" /></svg>
+          <svg class="sun" viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="3.5" /><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.300 4.300l1.400 1.400M14.300 14.300l1.400 1.400M4.300 15.700l1.400-1.400M14.300 5.700l1.400-1.400" /></svg>
+        </button>
+      </nav>
+    </header>
+
+    <main class="wrap">
+      <div class="hero">
+        <img src="icon.svg" alt="Kreskit icon" />
+        <h1>Mark up a screenshot in seconds</h1>
+        <p class="lead">
+          Paste a screenshot, add arrows, notes, highlights and CAD-style dimensions, then copy it
+          straight back out. Everything you draw stays editable.
+        </p>
+        <div class="actions">
+          <a class="button primary" href="app/">Try it in your browser</a>
+          <a class="button" href="https://github.com/Szymon423/Kreskit">Source on GitHub</a>
+        </div>
+        <p class="note">No sign-up, nothing to install. Your images never leave your computer.</p>
+      </div>
+
+      <img class="shot" src="kreskit.png" width="1152" height="849" alt="The Kreskit window: a floating toolbar above a screenshot annotated with dimensions, an arrow, a note, a highlight and a circle" />
+
+      <section>
+        <h2>What it can do</h2>
+        <p class="sub">More capable than a paint program, far lighter than an image editor.</p>
+        <div class="grid">
+          <div class="card">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4v12M17 4v12M4 10h12M6.500 7.500L4 10l2.500 2.500M13.500 7.500L16 10l-2.500 2.500" /></svg>
+            <h3>CAD-style dimensions</h3>
+            <p>Linear, radius and diameter dimensions with arrows and extension lines. Drag between two points and type the value.</p>
+          </div>
+          <div class="card">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16L16 4M9 4h7v7" /></svg>
+            <h3>The tools you reach for</h3>
+            <p>Rectangle, ellipse, line, arrow, pen, highlighter and text, each on a single key.</p>
+          </div>
+          <div class="card">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l10 7-5 1-2 5z" /></svg>
+            <h3>Nothing is baked in</h3>
+            <p>Select anything later to move, resize, rotate, recolour or delete it. Undo and redo cover every step.</p>
+          </div>
+          <div class="card">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v7a5 5 0 0010 0V3h-3v7a2 2 0 01-4 0V3z" /><path d="M5 6.500h3M12 6.500h3" /></svg>
+            <h3>Snapping</h3>
+            <p>Shapes and dimension points align to each other and to the image edges, with guide lines showing what they caught.</p>
+          </div>
+          <div class="card">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v10M6 9l4 4 4-4M4 16h12" /></svg>
+            <h3>Out in any format</h3>
+            <p>Copy to the clipboard, or export PNG, JPG, SVG or PDF. Save a project file to keep editing later.</p>
+          </div>
+          <div class="card">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="10" rx="1.500" /><path d="M7 17h6M10 14v3" /></svg>
+            <h3>Desktop and browser</h3>
+            <p>A small desktop app built with Tauri, and the same editor running right here in the browser.</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Before and after</h2>
+        <p class="sub">A plain screenshot, and the same one a minute later.</p>
+        <div class="pair">
+          <figure>
+            <img src="01.png" width="889" height="567" alt="A plain screenshot of a search page" />
+            <figcaption>Before: as pasted</figcaption>
+          </figure>
+          <figure>
+            <img src="02.png" width="889" height="567" alt="The same screenshot with dimensions, an arrow, a note, a highlight and a circle added" />
+            <figcaption>After: marked up in Kreskit</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="made">
+        <h2>How it was made</h2>
+        <p>
+          Kreskit is vibe-coded, and says so. The code was written by an AI assistant and directed by
+          a human, who decided what the app should do and tested every stage by hand. It is a
+          personal tool shared as it is, not an audited product.
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        <p>© 2026 Szymon423. Free and open source under the <a href="https://github.com/Szymon423/Kreskit/blob/main/LICENSE">MIT License</a>.</p>
+        <p><a href="https://github.com/Szymon423/Kreskit">GitHub</a> · <a href="https://github.com/Szymon423/Kreskit/issues">Report a problem</a></p>
+      </div>
+    </footer>
+
+    <script>
+      document.getElementById('theme').addEventListener('click', () => {
+        const root = document.documentElement
+        root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark'
+        try {
+          localStorage.setItem('kreskit.site.theme', root.dataset.theme)
+        } catch {
+          // The choice then lasts for this visit only.
+        }
+      })
+    </script>
   </body>
 </html>
