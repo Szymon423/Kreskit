@@ -1,0 +1,27 @@
+[package]
+name = "kreskit"
+version = "0.1.0"
+description = "Fast screenshot annotation"
+edition = "2021"
+
+[lib]
+name = "kreskit_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# image-png lets the clipboard accept the PNG the frontend renders.
+tauri = { version = "2", features = ["image-png"] }
+tauri-plugin-clipboard-manager = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-single-instance = "2"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true

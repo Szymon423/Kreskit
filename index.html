@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Kreskit</title>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <div id="empty">
+      <p><kbd>Ctrl</kbd>+<kbd>V</kbd> to paste a screenshot</p>
+      <p class="sub">or drop an image here, or press <kbd>Ctrl</kbd>+<kbd>O</kbd> to open one</p>
+    </div>
+    <div id="toolbar">
+      <button data-tool="select" title="Select (V)" aria-label="Select (V)"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l10 7-5 1-2 5z"/></svg></button>
+      <button data-tool="rect" title="Rectangle (R)" aria-label="Rectangle (R)"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="14" height="10" rx="1"/></svg></button>
+      <button data-tool="ellipse" title="Ellipse (O)" aria-label="Ellipse (O)"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="10" cy="10" rx="7" ry="5.5"/></svg></button>
+      <button data-tool="line" title="Line (L)" aria-label="Line (L)"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16L16 4"/></svg></button>
+      <button data-tool="arrow" title="Arrow (A)" aria-label="Arrow (A)"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16L16 4M9 4h7v7"/></svg></button>
+      <button data-tool="pen" title="Pen (P)" aria-label="Pen (P)"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15c3-7 5 3 8-3s3-5 6-6"/></svg></button>
+      <button data-tool="highlighter" title="Highlighter (H)" aria-label="Highlighter (H)"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l5 5-7 7H5v-5z"/><path d="M3 18h14"/></svg></button>
+      <button data-tool="text" title="Text (T)" aria-label="Text (T)"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h12M10 5v11M8 16h4"/></svg></button>
+      <hr />
+      <button data-tool="dimension" title="Dimension (D) – hold Shift to lock horizontal/vertical" aria-label="Dimension (D) – hold Shift to lock horizontal/vertical"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4v12M17 4v12M4 10h12M6.5 7.5L4 10l2.5 2.5M13.5 7.5L16 10l-2.5 2.5"/></svg></button>
+      <button data-tool="radius" title="Radius (Shift+R)" aria-label="Radius (Shift+R)"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><path d="M10 10l5-5M12 5h3v3"/></svg></button>
+      <button data-tool="diameter" title="Diameter (Shift+D)" aria-label="Diameter (Shift+D)"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="6"/><path d="M4 16L16 4"/></svg></button>
+      <hr />
+      <button id="snap" class="toggle"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v7a5 5 0 0010 0V3h-3v7a2 2 0 01-4 0V3z"/><path d="M5 6.5h3M12 6.5h3"/></svg></button>
+      <hr />
+      <button id="copy" title="Copy image to clipboard (Ctrl+C)" aria-label="Copy image to clipboard"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M13 7V4.5A1.5 1.5 0 0011.500 3h-7A1.500 1.500 0 003 4.500v7A1.500 1.500 0 004.500 13H7"/></svg></button>
+      <button id="export" title="Export as PNG, JPG, SVG or PDF (Ctrl+E)" aria-label="Export image"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v10M6 9l4 4 4-4M4 16h12"/></svg></button>
+      <button id="save" title="Save editable project (Ctrl+S)" aria-label="Save project"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3h9l3 3v11H4z"/><path d="M7 3v4h5V3M7 17v-6h6v6"/></svg></button>
+    </div>
+    <div id="stylebar" hidden></div>
+    <div id="status" hidden></div>
+    <div id="zoom" hidden>
+      <button id="fit" title="Reset the view to fit the image (Ctrl+0)" aria-label="Reset view"><svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V3h4M17 7V3h-4M3 13v4h4M17 13v4h-4"/><rect x="7" y="7" width="6" height="6" rx="1"/></svg></button>
+      <span id="zoom-value"></span>
+    </div>
+    <input id="file" type="file" accept="image/*,.shot" hidden />
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
