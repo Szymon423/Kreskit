@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content="Kreskit: fast screenshot annotation with shapes, arrows, text and CAD-style dimensions." />
+    <title>Kreskit</title>
+    <style>
+      :root {
+        --bg: #f4f5f7;
+        --fg: #1d1f23;
+        --muted: #6b7078;
+        --border: #cfd2d8;
+        --accent: #2f6fed;
+        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        color: var(--fg);
+        background: var(--bg);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #1b1c1f;
+          --fg: #e6e7ea;
+          --muted: #8d929b;
+          --border: #3d4047;
+          --accent: #6c9bff;
+        }
+      }
+      body {
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 56px 16px;
+        text-align: center;
+        line-height: 1.5;
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 44px;
+        letter-spacing: -0.02em;
+      }
+      .lead {
+        margin: 0 auto 28px;
+        max-width: 560px;
+        font-size: 18px;
+        color: var(--muted);
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+      .actions a {
+        padding: 10px 20px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--fg);
+        font-weight: 600;
+        text-decoration: none;
+      }
+      .actions a.primary {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: #fff;
+      }
+      .note {
+        margin: 0 0 36px;
+        font-size: 14px;
+        color: var(--muted);
+      }
+      img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 10px;
+        box-shadow: 0 12px 40px rgb(0 0 0 / 0.25);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Kreskit</h1>
+    <p class="lead">
+      Fast screenshot annotation. Paste a screenshot, mark it up with shapes, arrows, text and
+      CAD-style dimensions, then copy or export it.
+    </p>
+    <div class="actions">
+      <a class="primary" href="app/">Try it in your browser</a>
+      <a href="https://github.com/Szymon423/Kreskit">Source on GitHub</a>
+    </div>
+    <p class="note">The browser version runs entirely on your computer. Your images are never uploaded.</p>
+    <img src="kreskit.png" width="1152" height="849" alt="The Kreskit window: a floating toolbar above a screenshot annotated with dimensions, an arrow, a note, a highlight and a circle" />
+  </body>
+</html>

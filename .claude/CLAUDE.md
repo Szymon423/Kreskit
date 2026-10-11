@@ -26,6 +26,7 @@ npm run build          # tsc type-check + production frontend build
 npm run tauri build    # installers, into src-tauri/target/release/bundle/
 (cd src-tauri && cargo check)   # check the Rust shell
 npm run dev            # frontend only, in a browser at http://localhost:1420
+npm run build:web      # website into dist-web/: landing page at the root, the app under app/
 ```
 
 There are no automated tests and no linter. `npm run build` and `cargo check` are the only automatic checks, so run both after a change.
@@ -50,6 +51,9 @@ src/textedit.ts   In-place text editing
 src/dialog.ts     In-app question dialog
 src-tauri/        Rust shell: window, plugins, capabilities, bundling
 public/fonts/     DejaVu Sans, embedded into PDF exports
+site/             Landing page of the website (plain HTML, no build step)
+scripts/          Build helpers; assemble-site.mjs puts the landing page around the web build
+.github/workflows/pages.yml   Publishes dist-web/ to GitHub Pages on every push to main
 ```
 
 ## Architecture rules

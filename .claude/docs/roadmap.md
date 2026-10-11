@@ -15,6 +15,15 @@ Last updated: 2026-10-11. Update this file whenever something here changes.
 - Output: copy to clipboard, export PNG/JPG/SVG/PDF, save and reopen `.kit` projects (older `.shot` files still open).
 - Linux desktop build compiles and runs (Fedora, Wayland, NVIDIA).
 
+## Website (in progress)
+
+The site is published by GitHub Pages at `https://szymon423.github.io/Kreskit/`, with the live app under `app/`. The web build uses a relative base, so it also works unchanged under a custom domain.
+
+1. **Deploy** (done in code, not yet seen live): `npm run build:web`, `site/`, `.github/workflows/pages.yml`. Needs Pages switched to "GitHub Actions" in the repository settings.
+2. **Browser gaps in the app**: export downloads PNG without asking for a format; `Ctrl+1` and possibly other shortcuts belong to the browser; copy to clipboard is untried in real browsers.
+3. **Proper landing page**: `site/index.html` is a placeholder with one screenshot and two buttons.
+4. **Custom domain**: maybe later; not bought.
+
 ## Open, from the original plan
 
 1. **Image operations**: crop, resize, rotate in 90° steps. Nothing exists yet. Crop is the one Szymon mentioned first.
