@@ -4,15 +4,15 @@ Last updated: 2026-10-11. Update this file whenever something here changes.
 
 ## Built
 
-- Image in: paste, drag and drop, native open dialog (images and `.shot` projects).
+- Image in: paste, drag and drop, native open dialog (images and `.kit` projects).
 - View: wheel/pinch zoom at the pointer, Space-drag pan, fit, actual size, reset-view button.
 - Tools: select, rectangle, ellipse, line, arrow (one or two heads), pen, highlighter, text.
 - Dimensions: linear (any angle, Shift locks horizontal/vertical), radius, diameter, with editable value.
 - Editing: move, resize, rotate, multi-select, marquee, duplicate, reorder, delete, nudge, undo/redo.
-- Style bar: colour, fill, width, opacity, font and size; each tool remembers its last style.
+- Style bar: colour, fill, width, opacity, font and size; each tool remembers its last style. It also restyles a text or dimension value while it is being typed or re-edited.
 - Snapping with guide lines, plus a toggle.
 - Images added on top of the base image as ordinary movable objects.
-- Output: copy to clipboard, export PNG/JPG/SVG/PDF, save and reopen `.shot` projects.
+- Output: copy to clipboard, export PNG/JPG/SVG/PDF, save and reopen `.kit` projects (older `.shot` files still open).
 - Linux desktop build compiles and runs (Fedora, Wayland, NVIDIA).
 
 ## Open, from the original plan

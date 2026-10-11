@@ -19,7 +19,7 @@ Most screenshots need a quick edit before they are shared: highlight something, 
 | Shell | Tauri 2 (Rust), single instance, normal window |
 | UI | Vanilla TypeScript + Vite, Konva for the canvas |
 | Input | `Ctrl+V` paste, open file, drag and drop |
-| Output | Copy to clipboard, PNG/JPG, SVG/PDF, editable `.shot` project file |
+| Output | Copy to clipboard, PNG/JPG, SVG/PDF, editable `.kit` project file |
 | Tools | Select, rectangle, ellipse, line, arrow, pen, highlighter, text, dimensions |
 | Dimensions | Linear at any angle, horizontal/vertical lock with Shift, radius, diameter |
 | Image operations | Crop, resize, rotate in 90° steps (not built yet) |

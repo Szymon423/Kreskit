@@ -29,3 +29,9 @@ Szymon renamed the folder to `36-Shotmark`. Claude Code keys session history to 
 2. **Name search.** "Shotmark" was taken (npm package, `.com` and `.dev` domains). About 90 candidates were checked against npm, crates.io, GitHub, AUR and domain registration. **Kreskit** was chosen: free on npm and crates.io, no GitHub repositories or account by that name, `kreskit.com` unregistered at the time, and a web search found no product using it. Trademark registries and app stores were not checked.
 3. **Rename to Kreskit** across `package.json`, `Cargo.toml`, the Tauri config and identifier (`dev.kreskit.app`), the window title, the README and the project-file marker. Old `.shot` files marked `shotmark` still load. The `.shot` extension was kept.
 4. This `.claude/` directory was written, the folder was renamed to `36-Kreskit`, and the project was put under git for publishing to GitHub as `Szymon423/Kreskit`.
+
+## Session 3: polish after the first build
+
+1. **Styling text while it is edited.** The style bar used to restyle only the next text, and touching it closed the editor. It now applies to the text or dimension value being typed.
+2. **Project extension changed from `.shot` to `.kit`**, to match the app's name. `.shot` files still open; new saves get `.kit`.
+3. **`example/`** added with a plain screenshot, its annotated export and the editable project, and shown at the top of the README.

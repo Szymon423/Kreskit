@@ -5,6 +5,7 @@ import { exportBytes, renderToCanvas, type ImageFormat } from './export'
 import {
   PROJECT_EXTENSION,
   copyCanvas,
+  isProjectFile,
   isTauri,
   pickFile,
   saveAs,
@@ -135,7 +136,7 @@ const openFile = (): Promise<void> =>
     const picked = await pickFile()
     if (!picked || !(await load(picked.file))) return null
     // A project opened from disk is saved back to where it came from.
-    if (picked.path.toLowerCase().endsWith(`.${PROJECT_EXTENSION}`)) projectPath = picked.path
+    if (isProjectFile(picked.path)) projectPath = picked.path
     return null
   })
 

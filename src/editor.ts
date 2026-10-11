@@ -106,7 +106,13 @@ export class Editor {
   private gesture: Gesture | null = null
   private readPending = false
   private styles = loadStyles()
-  private editing: { finish(): void } | null = null
+  /** The text or dimension value being typed, with the style it will be saved with. */
+  private editing: {
+    type: TextObject['type'] | DimensionObject['type']
+    style(): Style
+    restyle(patch: Partial<Style>): void
+    finish(): void
+  } | null = null
 
   constructor(store: Store, viewport: Viewport) {
     this.store = store
@@ -170,6 +176,7 @@ export class Editor {
   }
 
   setTool(tool: Tool): void {
+    this.editing?.finish()
     this.tool = tool
     if (tool !== 'select') this.selection.clear()
     this.stage.container().style.cursor = tool === 'select' ? '' : 'crosshair'
@@ -192,6 +199,15 @@ export class Editor {
 
   /** Restyle the selection, or the active tool when nothing is selected. Either way the tool remembers it. */
   applyStyle(patch: Partial<Style>): void {
+    if (this.editing) {
+      // The text being typed is what the style bar is showing, so that is what changes.
+      const { type } = this.editing
+      this.styles[type] = { ...this.styles[type], ...patch }
+      saveStyles(this.styles)
+      this.editing.restyle(patch)
+      this.emitStyleContext()
+      return
+    }
     const selected = this.store.doc.objects.filter((o) => this.selection.has(o.id))
     const types = selected.length > 0 ? selected.map((o) => o.type) : [this.tool]
     for (const type of types) {
@@ -418,6 +434,10 @@ export class Editor {
   }
 
   private emitStyleContext(): void {
+    if (this.editing) {
+      this.onStyleContext({ style: this.editing.style(), types: new Set([this.editing.type]) })
+      return
+    }
     const selected = this.store.doc.objects.filter((o) => this.selection.has(o.id))
     if (selected.length > 0) {
       this.onStyleContext({ style: selected[0].style, types: new Set(selected.map((o) => o.type)) })
@@ -449,7 +469,9 @@ export class Editor {
     const scale = this.viewport.scale
     const frame = this.stage.container().getBoundingClientRect()
     const anchor = obj.type === 'text' ? obj : dimensionGeometry(obj).mid
-    this.editing = openTextEditor({
+    // Style changes made while typing collect here and are saved together with the text.
+    let edited = obj
+    const editor = openTextEditor({
       text: obj.text,
       style: obj.style,
       scale,
@@ -467,16 +489,31 @@ export class Editor {
         if (inPlace && text.trim() === '') {
           // Emptying a text removes it; an empty new text was never added.
           this.store.update((objects) => (isNew ? objects : objects.filter((o) => o.id !== obj.id)))
+          this.emitStyleContext()
           return
         }
+        const saved = { ...edited, text }
         if (isNew) {
-          this.store.update((objects) => [...objects, { ...obj, text }])
-        } else if (text !== obj.text) {
-          this.store.update((objects) => objects.map((o) => (o.id === obj.id ? { ...obj, text } : o)))
+          this.store.update((objects) => [...objects, saved])
+        } else if (text !== obj.text || edited !== obj) {
+          this.store.update((objects) => objects.map((o) => (o.id === obj.id ? saved : o)))
         }
         if (fromSelect) this.select([obj.id])
+        else this.emitStyleContext()
       },
     })
+    this.editing = {
+      type: obj.type,
+      style: () => edited.style,
+      finish: editor.finish,
+      restyle: (patch) => {
+        edited = { ...edited, style: { ...edited.style, ...patch } }
+        editor.restyle(edited.style)
+        // A dimension stays visible under its value box, so show the change on it straight away.
+        if (node && !inPlace) applyAttrs(node, edited)
+      },
+    }
+    this.emitStyleContext()
   }
 
   private makeEndpoint(index: 0 | 1): Konva.Circle {

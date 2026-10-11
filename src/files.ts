@@ -3,7 +3,15 @@ import type { Doc, SceneObject } from './model'
 
 export const isTauri = '__TAURI_INTERNALS__' in window
 
-export const PROJECT_EXTENSION = 'shot'
+/** The extension projects are saved with. */
+export const PROJECT_EXTENSION = 'kit'
+/** Projects were saved as `.shot` before the app was renamed; those still open. */
+const PROJECT_EXTENSIONS = [PROJECT_EXTENSION, 'shot']
+
+export function isProjectFile(name: string): boolean {
+  const lower = name.toLowerCase()
+  return PROJECT_EXTENSIONS.some((extension) => lower.endsWith(`.${extension}`))
+}
 
 export interface FileType {
   name: string
@@ -68,8 +76,8 @@ export async function pickFile(): Promise<{ file: File; path: string } | null> {
   const path = await open({
     multiple: false,
     filters: [
-      { name: 'Images and projects', extensions: [...IMAGE_EXTENSIONS, PROJECT_EXTENSION] },
-      { name: 'Kreskit project', extensions: [PROJECT_EXTENSION] },
+      { name: 'Images and projects', extensions: [...IMAGE_EXTENSIONS, ...PROJECT_EXTENSIONS] },
+      { name: 'Kreskit project', extensions: PROJECT_EXTENSIONS },
       { name: 'Images', extensions: IMAGE_EXTENSIONS },
     ],
   })

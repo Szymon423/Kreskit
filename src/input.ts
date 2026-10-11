@@ -1,4 +1,4 @@
-import { PROJECT_EXTENSION, isTauri, parseProject } from './files'
+import { isProjectFile, isTauri, parseProject } from './files'
 import type { Doc } from './model'
 import { isTextTarget } from './viewport'
 
@@ -20,7 +20,7 @@ export function listenForImages(
 ): (file: Blob) => Promise<boolean> {
   const load = async (blob: Blob): Promise<boolean> => {
     try {
-      if (blob instanceof File && blob.name.toLowerCase().endsWith(`.${PROJECT_EXTENSION}`)) {
+      if (blob instanceof File && isProjectFile(blob.name)) {
         return await onProject(await parseProject(await blob.text()))
       } else {
         onImage(await createImageBitmap(blob))

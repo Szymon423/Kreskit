@@ -41,7 +41,7 @@ src/store.ts      Document state with undo/redo
 src/nodes.ts      Scene object -> Konva node
 src/dimension.ts  Dimension geometry (linear, radius, diameter)
 src/export.ts     PNG, JPG, SVG and PDF output
-src/files.ts      Save/open dialogs, clipboard, .shot project files
+src/files.ts      Save/open dialogs, clipboard, .kit project files
 src/input.ts      Paste, drop and file-picker entry points
 src/viewport.ts   Zoom and pan
 src/stylebar.ts   Context bar for the selected object's style
@@ -57,7 +57,7 @@ public/fonts/     DejaVu Sans, embedded into PDF exports
 - **The scene model is the source of truth.** A plain document (`Doc` in `src/model.ts`) holds the base image and a list of typed objects with their style. Konva only renders it; never keep state in Konva nodes that is not in the model.
 - **Every change goes through the store** (`src/store.ts`), which is what gives undo/redo. One user gesture should be one undo step.
 - **Three exporters read the same model.** A new object type, or a change to how one looks, must be made in the Konva renderer (`src/nodes.ts`, `src/dimension.ts`) and in the SVG serializer in `src/export.ts`. PDF follows from SVG. If you change one and not the other, the export stops matching the canvas.
-- **Project files (`.shot`) must stay readable.** They are JSON with `app`, `version`, the base image and the objects. Files written with `app: "shotmark"` are still accepted. If the format has to change, bump `version` and keep loading the old one.
+- **Project files (`.kit`) must stay readable.** They were saved as `.shot` until 2026-10-11, and that extension must keep opening. They are JSON with `app`, `version`, the base image and the objects. Files written with `app: "shotmark"` are still accepted. If the format has to change, bump `version` and keep loading the old one.
 - **A dimension is one composite object** with its own handles (two measured points, an offset handle), not a group of lines and text.
 - **Linux/NVIDIA workaround**: `src-tauri/src/main.rs` disables WebKitGTK's DMABUF renderer when the proprietary NVIDIA driver is present. Without it the app dies at startup on Wayland with "Error 71 (Protocol error)". Do not remove it.
 
