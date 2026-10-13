@@ -7,9 +7,11 @@ Last updated: 2026-10-11. Update this file whenever something here changes.
 - Image in: paste, drag and drop, native open dialog (images and `.kit` projects).
 - View: wheel/pinch zoom at the pointer, Space-drag pan, fit, actual size, reset-view button.
 - Tools: select, rectangle, ellipse, line, arrow (one or two heads), pen, highlighter, text.
+- Line endings for arrows and dimensions: triangle, pointed, tick or none. An arrow is drawn as one filled shape, so its tip is exact and a translucent arrow has an even colour.
 - Dimensions: linear (any angle, Shift locks horizontal/vertical), radius, diameter, with editable value.
 - Editing: move, resize, rotate, multi-select, marquee, duplicate, reorder, delete, nudge, undo/redo.
 - Style bar: colour, fill, width, opacity, font and size; each tool remembers its last style. It also restyles a text or dimension value while it is being typed or re-edited.
+- Sizes follow the image: new objects are scaled by the image's longer side relative to 1000 px (limited to 0.4x–8x), and the style bar shows image-independent values.
 - Snapping with guide lines, plus a toggle.
 - Images added on top of the base image as ordinary movable objects.
 - Toolbar: one output menu (copy, export per format, save project) and a clear-everything button.
@@ -37,7 +39,7 @@ Live at `https://szymon423.github.io/Kreskit/`, with the editor under `app/`. Pu
 
 - No copy/paste of annotation objects between places or documents (`Ctrl+D` duplicates only).
 - No snapping when dragging several selected objects at once; snapping is approximate for rotated shapes.
-- The ordinary arrow's tip overshoots its endpoint slightly at large widths (dimensions were fixed, arrows were not).
+- On a translucent dimension, the places where a head, the line and the extension lines overlap are slightly darker (arrows no longer have this).
 - The highlighter is a plain semi-transparent stroke, so it lightens text under it a little.
 - A new dimension takes two undo steps: one for the value, one for the dimension.
 - No warning about unsaved changes when closing the window.

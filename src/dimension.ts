@@ -1,7 +1,6 @@
 import Konva from 'konva'
+import { headedSegment, type Head, type Point } from './heads'
 import type { DimensionObject } from './model'
-
-type Point = { x: number; y: number }
 
 /** Everything needed to draw a dimension, shared by the canvas and the SVG export. */
 export interface DimensionGeometry {
@@ -13,8 +12,8 @@ export interface DimensionGeometry {
   normal: Point
   /** The dimension line shortened to the bases of its arrowheads. */
   shaft: [Point, Point]
-  /** One filled triangle per arrowhead, as flat x,y lists starting at the tip. */
-  heads: number[][]
+  /** The endings at the start and end of the dimension line; null where there is none. */
+  heads: [Head | null, Head | null]
   /** Extension lines from the measured points out to the dimension line. */
   extensions: [Point, Point][]
   /** Rotation for the label, in degrees: it always reads left to right, or top to bottom when vertical. */
@@ -27,7 +26,7 @@ export interface DimensionGeometry {
 
 export function dimensionGeometry(obj: DimensionObject): DimensionGeometry {
   const [ax, ay, bx, by] = obj.points
-  const { strokeWidth } = obj.style
+  const { strokeWidth, scale } = obj.style
   const linear = obj.type === 'dimension'
 
   let dir = { x: 1, y: 0 }
@@ -54,33 +53,19 @@ export function dimensionGeometry(obj: DimensionObject): DimensionGeometry {
   const up = { x: Math.sin(radians), y: -Math.cos(radians) }
   const labelBelow = (up.x * normal.x + up.y * normal.y) * offset < 0
 
-  // The arrowheads are plain filled triangles: a stroked head would poke its mitred tip past
-  // the extension line, and the tip has to land exactly on the measured point.
-  const length = Math.hypot(to.x - from.x, to.y - from.y)
-  const ux = length > 0 ? (to.x - from.x) / length : 1
-  const uy = length > 0 ? (to.y - from.y) / length : 0
-  const headLength = Math.min(Math.max(11.5, strokeWidth * 4.6), length / 2)
-  const headWidth = headLength * 0.6
-  const shaft: [Point, Point] = [from, to]
-  const heads: number[][] = []
-  // A radius is measured from the centre, so only the end on the circle gets an arrowhead.
-  const tips = [obj.type === 'radius' ? null : { at: from, sign: 1 }, { at: to, sign: -1 }]
-  tips.forEach((tip, index) => {
-    if (!tip || length === 0) return
-    // The shaft stops at the base of the head so its square end cannot show beside the tip.
-    const base = { x: tip.at.x + ux * headLength * tip.sign, y: tip.at.y + uy * headLength * tip.sign }
-    shaft[index] = base
-    heads.push([
-      tip.at.x,
-      tip.at.y,
-      base.x - (uy * headWidth) / 2,
-      base.y + (ux * headWidth) / 2,
-      base.x + (uy * headWidth) / 2,
-      base.y - (ux * headWidth) / 2,
-    ])
+  // A crossbar would vanish into the extension line it sits on, so a dimension's tick is the
+  // drafting kind: a 45° slash. A radius is measured from the centre, so only its outer end gets one.
+  const headLength = Math.max(11.5 * scale, strokeWidth * 4.6)
+  const { shaft, heads } = headedSegment(from, to, {
+    shape: obj.style.headShape,
+    start: obj.type !== 'radius',
+    end: true,
+    length: headLength,
+    width: headLength * 0.6,
+    tickAngle: 45,
   })
 
-  const overshoot = strokeWidth * 2 + 4
+  const overshoot = strokeWidth * 2 + 4 * scale
   const extensions: [Point, Point][] = []
   if (linear) {
     for (const [start, end] of [
@@ -105,13 +90,27 @@ export function dimensionGeometry(obj: DimensionObject): DimensionGeometry {
     extensions,
     angle,
     labelBelow,
-    labelGap: strokeWidth / 2 + 3,
+    labelGap: strokeWidth / 2 + 3 * scale,
   }
 }
 
 /** Width of the extension lines, which are drawn finer than the dimension line. */
 export function extensionWidth(obj: DimensionObject): number {
-  return Math.max(1, obj.style.strokeWidth / 2)
+  return Math.max(obj.style.scale, obj.style.strokeWidth / 2)
+}
+
+/** Konva attributes that make a line node draw one head: a fill for the pointed kinds, a stroke for a tick. */
+export function headAttrs(head: Head | null, style: { stroke: string; strokeWidth: number }): object {
+  return {
+    visible: head !== null,
+    points: head?.points ?? [],
+    closed: head?.filled ?? false,
+    fillEnabled: head?.filled ?? false,
+    strokeEnabled: !(head?.filled ?? true),
+    fill: style.stroke,
+    stroke: style.stroke,
+    strokeWidth: style.strokeWidth,
+  }
 }
 
 export function createDimensionNode(): Konva.Group {
@@ -120,8 +119,8 @@ export function createDimensionNode(): Konva.Group {
     new Konva.Line({ name: 'ext0' }),
     new Konva.Line({ name: 'ext1' }),
     new Konva.Line({ name: 'shaft' }),
-    new Konva.Line({ name: 'head0', closed: true, strokeEnabled: false }),
-    new Konva.Line({ name: 'head1', closed: true, strokeEnabled: false }),
+    new Konva.Line({ name: 'head0' }),
+    new Konva.Line({ name: 'head1' }),
     new Konva.Text({ name: 'label' }),
   )
   return group
@@ -139,13 +138,10 @@ export function updateDimensionNode(group: Konva.Group, obj: DimensionObject): v
     points: [shaft[0].x, shaft[0].y, shaft[1].x, shaft[1].y],
     stroke,
     strokeWidth,
-    hitStrokeWidth: 14,
+    hitStrokeWidth: 14 * obj.style.scale,
   })
   for (const index of [0, 1]) {
-    const head = geometry.heads[index]
-    group
-      .findOne<Konva.Line>(`.head${index}`)!
-      .setAttrs({ visible: head !== undefined, points: head ?? [], fill: stroke })
+    group.findOne<Konva.Line>(`.head${index}`)!.setAttrs(headAttrs(geometry.heads[index], obj.style))
 
     const extension = geometry.extensions[index]
     group.findOne<Konva.Line>(`.ext${index}`)!.setAttrs({
@@ -153,7 +149,7 @@ export function updateDimensionNode(group: Konva.Group, obj: DimensionObject): v
       points: extension ? [extension[0].x, extension[0].y, extension[1].x, extension[1].y] : [],
       stroke,
       strokeWidth: extensionWidth(obj),
-      hitStrokeWidth: 10,
+      hitStrokeWidth: 10 * obj.style.scale,
     })
   }
 

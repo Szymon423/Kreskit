@@ -35,7 +35,9 @@ These came out of testing rounds. Do not change them without asking.
 - **Pasting over existing work asks first**: add the image to the canvas (default), replace everything, or cancel. Opening a project over existing work also asks, with Cancel as the default.
 - **Snapping** applies while drawing, while dragging an object, while dragging an endpoint, and while resizing. There is a toolbar toggle (magnet icon, `S` key), remembered between sessions. Holding `Ctrl` gives the opposite of the current setting.
 - **Dimension arrowheads** are plain filled triangles whose tip sits exactly on the end of the dimension line; they must not overshoot the extension lines.
-- **Dimension line width** is limited to 0.5–6 px. Other tools keep the wide range (the highlighter needs about 20).
+- **Line endings come in four kinds**, chosen in the style bar for arrows and for dimensions: triangle, pointed (a triangle with a notched back), tick, and none. On an arrow the tick is a crossbar; on a dimension it is a 45° slash, because a crossbar would disappear into the extension line.
+- **Annotations are sized relative to the image**, with no control to set: what you draw next is scaled by the image's longer side compared with 1000 px, so the same slider position looks the same on a small and a large screenshot. Things already drawn keep their size. Szymon chose this over an explicit per-image scale setting.
+- **Dimension line width** is limited to 0.5–6 (in the style bar's image-independent units). Other tools keep the wide range (the highlighter needs about 20).
 - **Dimension text** always reads left to right, and top to bottom on vertical dimensions, and sits on the side of the dimension line facing away from the measured object.
 - **Pen and highlighter strokes are lightly smoothed** on release (`SMOOTHING` in `src/editor.ts`).
 - **A reset-view button** sits next to the zoom percentage and does the same as `Ctrl+0`.

@@ -1,5 +1,6 @@
 import { bitmapDataUrl, canvasBlob } from './export'
 import type { Doc, SceneObject } from './model'
+import { BASE } from './styles'
 
 export const isTauri = '__TAURI_INTERNALS__' in window
 
@@ -144,5 +145,7 @@ export async function parseProject(text: string): Promise<Doc> {
       obj.type === 'image' ? { ...obj, bitmap: await decode(obj.bitmap as unknown as string) } : obj,
     ),
   )
+  // Projects saved before a style field existed get its default, so old files keep their look.
+  for (const obj of objects) obj.style = { ...BASE, ...obj.style }
   return { image, objects }
 }

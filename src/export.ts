@@ -1,7 +1,8 @@
 import Konva from 'konva'
 import { dimensionGeometry, extensionWidth } from './dimension'
 import type { Doc, SceneObject, Style } from './model'
-import { applyAttrs, createNode } from './nodes'
+import type { Head } from './heads'
+import { applyAttrs, arrowOutline, createNode } from './nodes'
 import { TEXT_LINE_HEIGHT } from './textedit'
 
 export type ImageFormat = 'png' | 'jpg' | 'svg' | 'pdf'
@@ -185,6 +186,18 @@ function line(x1: number, y1: number, x2: number, y2: number, attrs: string): st
   return `<line x1="${n(x1)}" y1="${n(y1)}" x2="${n(x2)}" y2="${n(y2)}" ${attrs}/>`
 }
 
+/** Line endings: a filled polygon for the pointed kinds, a stroke for a tick. */
+function headsSvg(heads: readonly (Head | null)[], style: Style): string {
+  return heads
+    .map((head) => {
+      if (!head) return ''
+      if (head.filled) return polygon(head.points, `fill="${style.stroke}"`)
+      const [x1, y1, x2, y2] = head.points
+      return line(x1, y1, x2, y2, strokeAttrs(style))
+    })
+    .join('')
+}
+
 function textSvg(text: string, style: Style, lineHeight: number, anchor: string, top: number): string {
   const step = style.fontSize * lineHeight
   // Each line is centred on its own row, which is how the canvas lays text out. The baseline is
@@ -222,31 +235,16 @@ function objectSvg(obj: SceneObject): string {
         `<ellipse rx="${n(obj.radiusX)}" ry="${n(obj.radiusY)}" ${fill} ${strokeAttrs(style)}/>`,
         `translate(${n(obj.x)} ${n(obj.y)}) rotate(${n(obj.rotation)})`,
       )
-    case 'line':
-    case 'arrow': {
+    case 'line': {
       const [x1, y1, x2, y2] = obj.points
-      const body = [line(x1, y1, x2, y2, `${strokeAttrs(style)} stroke-linecap="round"`)]
-      if (obj.type === 'arrow') {
-        const size = Math.max(10, style.strokeWidth * 3.5)
-        const length = Math.hypot(x2 - x1, y2 - y1) || 1
-        const ux = (x2 - x1) / length
-        const uy = (y2 - y1) / length
-        const head = (tx: number, ty: number, sign: number): string =>
-          polygon(
-            [
-              tx,
-              ty,
-              tx - ux * size * sign - (uy * size) / 2,
-              ty - uy * size * sign + (ux * size) / 2,
-              tx - ux * size * sign + (uy * size) / 2,
-              ty - uy * size * sign - (ux * size) / 2,
-            ],
-            `fill="${style.stroke}" ${strokeAttrs(style)}`,
-          )
-        body.push(head(x2, y2, 1))
-        if (style.arrowHeads === 'both') body.push(head(x1, y1, -1))
-      }
-      return wrap(body.join(''))
+      return wrap(line(x1, y1, x2, y2, `${strokeAttrs(style)} stroke-linecap="round"`))
+    }
+    case 'arrow': {
+      // One path for the line and its heads, as on the canvas, so overlaps do not show.
+      const d = arrowOutline(obj)
+        .map((points) => `M${points.map(n).join(' ')}Z`)
+        .join('')
+      return wrap(`<path d="${d}" fill="${style.stroke}"/>`)
     }
     case 'pen':
     case 'highlighter':
@@ -267,7 +265,7 @@ function objectSvg(obj: SceneObject): string {
       for (const [start, end] of geometry.extensions) {
         body.push(line(start.x, start.y, end.x, end.y, strokeAttrs(style, extensionWidth(obj))))
       }
-      for (const head of geometry.heads) body.push(polygon(head, `fill="${style.stroke}"`))
+      body.push(headsSvg(geometry.heads, style))
       // The label is one row high; put that row above or below the line, as on the canvas.
       const top = geometry.labelBelow ? geometry.labelGap : -geometry.labelGap - style.fontSize
       body.push(

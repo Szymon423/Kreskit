@@ -42,6 +42,7 @@ src/model.ts      Document and object types (the scene model)
 src/store.ts      Document state with undo/redo
 src/nodes.ts      Scene object -> Konva node
 src/dimension.ts  Dimension geometry (linear, radius, diameter)
+src/heads.ts      Line endings (triangle, pointed, tick, none) for arrows and dimensions
 src/export.ts     PNG, JPG, SVG and PDF output
 src/files.ts      Save/open dialogs, clipboard, .kit project files
 src/input.ts      Paste, drop and file-picker entry points
@@ -60,6 +61,7 @@ scripts/          Build helpers; assemble-site.mjs puts the landing page around 
 example/          Screenshots and a sample project, used by the README and the landing page
 LICENSE           MIT
 .github/workflows/pages.yml   Publishes dist-web/ to GitHub Pages on every push to main
+.github/social-preview.svg   Source of the repository's social preview; render with `rsvg-convert .github/social-preview.svg -o .github/social-preview.png` and upload the PNG in the repository settings
 ```
 
 ## Architecture rules
@@ -68,6 +70,7 @@ LICENSE           MIT
 - **Every change goes through the store** (`src/store.ts`), which is what gives undo/redo. One user gesture should be one undo step.
 - **Three exporters read the same model.** A new object type, or a change to how one looks, must be made in the Konva renderer (`src/nodes.ts`, `src/dimension.ts`) and in the SVG serializer in `src/export.ts`. PDF follows from SVG. If you change one and not the other, the export stops matching the canvas.
 - **Project files (`.kit`) must stay readable.** They were saved as `.shot` until 2026-10-11, and that extension must keep opening. They are JSON with `app`, `version`, the base image and the objects. Files written with `app: "shotmark"` are still accepted. If the format has to change, bump `version` and keep loading the old one.
+- **Sizes are stored in pixels but edited in image-independent units.** Each object's `style.scale` records the factor it was created with (`sizeFactor` in `src/styles.ts`). Tool styles and everything the style bar shows or sends are relative (`toRelative`, `scaleLengths`); objects hold real pixels. Any fixed size in drawing code (a minimum arrowhead, a gap, a hit width) must be multiplied by `style.scale`, or it will look wrong on large and small images.
 - **A dimension is one composite object** with its own handles (two measured points, an offset handle), not a group of lines and text.
 - **Linux/NVIDIA workaround**: `src-tauri/src/main.rs` disables WebKitGTK's DMABUF renderer when the proprietary NVIDIA driver is present. Without it the app dies at startup on Wayland with "Error 71 (Protocol error)". Do not remove it.
 

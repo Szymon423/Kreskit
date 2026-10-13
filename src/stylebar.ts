@@ -11,6 +11,20 @@ type OnChange = (patch: Partial<Style>) => void
 
 const FILLABLE: ObjectType[] = ['rect', 'ellipse']
 
+/** Each line ending with its name and a small drawing of it: a line running to the right. */
+const HEAD_SHAPES: [Style['headShape'], string, string][] = [
+  ['triangle', 'Triangle ends', '<path d="M2 7h14"/><path d="M24 7l-9-4.500v9z" fill="currentColor" stroke="none"/>'],
+  ['sharp', 'Pointed ends', '<path d="M2 7h16"/><path d="M24 7l-10-4.500 3.500 4.500-3.500 4.500z" fill="currentColor" stroke="none"/>'],
+  ['tick', 'Tick ends', '<path d="M2 7h21M23 2v10"/>'],
+  ['none', 'No ends', '<path d="M2 7h22"/>'],
+]
+const BOTH_ENDS_ICON =
+  '<path d="M9 7h8"/><path d="M2 7l8-4v8zM24 7l-8-4v8z" fill="currentColor" stroke="none"/>'
+
+function icon(body: string): string {
+  return `<svg viewBox="0 0 26 14" width="26" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`
+}
+
 /** The strip of style controls for the active tool or the current selection. */
 export class StyleBar {
   private root: HTMLElement
@@ -22,7 +36,9 @@ export class StyleBar {
   private opacity = slider('Opacity', 10, 100)
   private font = document.createElement('select')
   private size = document.createElement('input')
-  private heads = document.createElement('select')
+  private bothEnds = document.createElement('button')
+  private shape = document.createElement('div')
+  private twoHeaded = false
 
   constructor(root: HTMLElement, onChange: OnChange) {
     this.root = root
@@ -30,9 +46,25 @@ export class StyleBar {
     for (const name of Object.keys(FONTS)) this.font.add(new Option(name, FONTS[name]))
     this.font.title = 'Font'
     Object.assign(this.size, { type: 'number', min: '6', max: '400', title: 'Font size' })
-    this.heads.add(new Option('One head', 'end'))
-    this.heads.add(new Option('Two heads', 'both'))
-    this.heads.title = 'Arrowheads'
+    this.shape.className = 'icon-choice'
+    for (const [value, label, drawing] of HEAD_SHAPES) {
+      const button = document.createElement('button')
+      button.title = label
+      button.dataset.value = value
+      button.innerHTML = icon(drawing)
+      button.addEventListener('click', () => {
+        onChange({ headShape: value })
+        button.blur()
+      })
+      this.shape.append(button)
+    }
+    this.bothEnds.className = 'icon-choice'
+    this.bothEnds.title = 'Heads on both ends'
+    this.bothEnds.innerHTML = icon(BOTH_ENDS_ICON)
+    this.bothEnds.addEventListener('click', () => {
+      onChange({ arrowHeads: this.twoHeaded ? 'end' : 'both' })
+      this.bothEnds.blur()
+    })
     root.append(
       this.stroke.button,
       this.fill.button,
@@ -40,7 +72,8 @@ export class StyleBar {
       this.opacity.label,
       this.font,
       this.size,
-      this.heads,
+      this.shape,
+      this.bothEnds,
     )
 
     this.stroke.button.addEventListener('click', () =>
@@ -56,9 +89,6 @@ export class StyleBar {
       onChange({ opacity: this.opacity.input.valueAsNumber / 100 }),
     )
     this.font.addEventListener('change', () => onChange({ fontFamily: this.font.value }))
-    this.heads.addEventListener('change', () =>
-      onChange({ arrowHeads: this.heads.value as Style['arrowHeads'] }),
-    )
     this.size.addEventListener('change', () => {
       const fontSize = Math.min(400, Math.max(6, this.size.valueAsNumber || 0))
       onChange({ fontSize })
@@ -67,7 +97,7 @@ export class StyleBar {
       if (e.key === 'Enter') this.size.blur()
     })
     // Give the keyboard back to the canvas, so Delete and the tool keys keep working.
-    for (const control of [this.width.input, this.opacity.input, this.font, this.heads]) {
+    for (const control of [this.width.input, this.opacity.input, this.font]) {
       control.addEventListener('change', () => control.blur())
     }
 
@@ -99,7 +129,10 @@ export class StyleBar {
     this.width.label.hidden = !stroked
     this.font.hidden = !text
     this.size.hidden = !text
-    this.heads.hidden = !has('arrow')
+    const ended = has('arrow') || [...types].some(isDimensionType)
+    this.shape.hidden = !ended
+    // Which ends carry a head only matters when there is a head to carry.
+    this.bothEnds.hidden = !has('arrow') || style.headShape === 'none'
 
     // Dimension lines are meant to be fine, so their width control stops well short of the others'.
     const fine = [...types].every(isDimensionType)
@@ -108,7 +141,11 @@ export class StyleBar {
     this.stroke.set(style.stroke)
     this.fill.set(style.fill)
     this.font.value = style.fontFamily
-    this.heads.value = style.arrowHeads
+    this.twoHeaded = style.arrowHeads === 'both'
+    this.bothEnds.classList.toggle('active', this.twoHeaded)
+    for (const button of this.shape.querySelectorAll('button')) {
+      button.classList.toggle('active', button.dataset.value === style.headShape)
+    }
     // Do not overwrite a control the user is in the middle of using.
     if (document.activeElement !== this.width.input) this.width.input.value = String(style.strokeWidth)
     if (document.activeElement !== this.opacity.input) {

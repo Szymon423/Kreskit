@@ -16,7 +16,7 @@ import {
 import { applyAttrs, createNode, type ObjectNode } from './nodes'
 import type { Store } from './store'
 import type { StyleContext } from './stylebar'
-import { loadStyles, saveStyles } from './styles'
+import { loadStyles, saveStyles, scaleLengths, sizeFactor, toPixels, toRelative } from './styles'
 import { openTextEditor } from './textedit'
 import type { Viewport } from './viewport'
 
@@ -41,7 +41,7 @@ const GUIDE_COLOR = '#ff3ea5'
 /** Long enough to cross any view of the document. */
 const GUIDE_REACH = 1e5
 const NOTHING: ReadonlySet<string> = new Set()
-/** How far, in screen pixels, a new dimension line sits from the points it measures. */
+/** How far a new dimension line sits from the points it measures, before scaling to the image. */
 const DIMENSION_OFFSET = 32
 /** How far, in screen pixels, a freehand stroke may be moved to smooth it. */
 const SMOOTHING = 1.5
@@ -198,6 +198,7 @@ export class Editor {
   }
 
   /** Restyle the selection, or the active tool when nothing is selected. Either way the tool remembers it. */
+  /** The patch comes from the style bar, so its lengths are image-independent (see Style.scale). */
   applyStyle(patch: Partial<Style>): void {
     if (this.editing) {
       // The text being typed is what the style bar is showing, so that is what changes.
@@ -218,7 +219,9 @@ export class Editor {
       this.store.update(
         (objects) =>
           objects.map((o) =>
-            this.selection.has(o.id) ? { ...o, style: { ...o.style, ...patch } } : o,
+            this.selection.has(o.id)
+              ? { ...o, style: { ...o.style, ...scaleLengths(patch, o.style.scale) } }
+              : o,
           ),
         `style:${Object.keys(patch)}`,
       )
@@ -234,7 +237,7 @@ export class Editor {
     const picture: ImageObject = {
       id: newId(),
       type: 'image',
-      style: this.styles.image,
+      style: this.newStyle('image'),
       bitmap,
       x: Math.round((this.stage.width() / 2 - this.stage.x()) / scale - width / 2),
       y: Math.round((this.stage.height() / 2 - this.stage.y()) / scale - height / 2),
@@ -433,14 +436,25 @@ export class Editor {
     this.emitStyleContext()
   }
 
+  /** The style for something about to be drawn: the tool's own, sized to suit the image. */
+  private newStyle(type: ObjectType): Style {
+    return toPixels(this.styles[type], sizeFactor(this.store.doc.image))
+  }
+
   private emitStyleContext(): void {
     if (this.editing) {
-      this.onStyleContext({ style: this.editing.style(), types: new Set([this.editing.type]) })
+      this.onStyleContext({
+        style: toRelative(this.editing.style()),
+        types: new Set([this.editing.type]),
+      })
       return
     }
     const selected = this.store.doc.objects.filter((o) => this.selection.has(o.id))
     if (selected.length > 0) {
-      this.onStyleContext({ style: selected[0].style, types: new Set(selected.map((o) => o.type)) })
+      this.onStyleContext({
+        style: toRelative(selected[0].style),
+        types: new Set(selected.map((o) => o.type)),
+      })
     } else if (this.tool !== 'select') {
       this.onStyleContext({ style: this.styles[this.tool], types: new Set([this.tool]) })
     } else {
@@ -507,7 +521,8 @@ export class Editor {
       style: () => edited.style,
       finish: editor.finish,
       restyle: (patch) => {
-        edited = { ...edited, style: { ...edited.style, ...patch } }
+        const style = { ...edited.style, ...scaleLengths(patch, edited.style.scale) }
+        edited = { ...edited, style }
         editor.restyle(edited.style)
         // A dimension stays visible under its value box, so show the change on it straight away.
         if (node && !inPlace) applyAttrs(node, edited)
@@ -732,7 +747,7 @@ export class Editor {
       if (hit?.type === 'text') {
         this.editText(hit, false)
       } else {
-        const style = this.styles.text
+        const style = this.newStyle('text')
         this.editText({ id: newId(), type: 'text', style, ...start, rotation: 0, text: '' }, true)
       }
       return
@@ -743,14 +758,14 @@ export class Editor {
         start = this.snapPoint(start, NOTHING, e.evt)
       }
       const id = newId()
-      const style = this.styles[this.tool]
+      const style = this.newStyle(this.tool)
       const obj: SceneObject = isDimensionType(this.tool)
         ? {
             id,
             type: this.tool,
             style,
             points: [start.x, start.y, start.x, start.y],
-            offset: -DIMENSION_OFFSET / this.viewport.scale,
+            offset: -DIMENSION_OFFSET * style.scale,
             axis: 'aligned',
             text: DIMENSION_PREFIX[this.tool],
           }

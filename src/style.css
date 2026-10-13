@@ -291,6 +291,44 @@ kbd {
   padding: 0 4px;
 }
 
+/* A row of icon buttons where one is picked, or a single icon button that is on or off. */
+.icon-choice {
+  display: flex;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: none;
+  color: var(--fg);
+}
+
+.icon-choice button,
+button.icon-choice {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 26px;
+  cursor: pointer;
+}
+
+.icon-choice button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+}
+
+.icon-choice button:hover,
+button.icon-choice:hover {
+  background: color-mix(in srgb, var(--fg) 10%, transparent);
+}
+
+.icon-choice button.active,
+button.icon-choice.active {
+  background: var(--accent);
+  color: #fff;
+}
+
 .well {
   display: flex;
   align-items: center;

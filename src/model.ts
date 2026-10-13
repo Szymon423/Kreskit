@@ -1,3 +1,5 @@
+import type { HeadShape } from './heads'
+
 /** One style shape for every object; each object type uses the fields that apply to it. */
 export interface Style {
   /** Outline colour, or the text colour for text objects. */
@@ -9,6 +11,14 @@ export interface Style {
   fontSize: number
   /** Which ends of an arrow carry a head. */
   arrowHeads: 'end' | 'both'
+  /** What those heads, and the ends of a dimension line, look like. */
+  headShape: HeadShape
+  /**
+   * How much the object was enlarged to suit its image (see sizeFactor in styles.ts). The lengths
+   * above are real pixels; dividing them by this gives the image-independent values the style
+   * bar shows, and the small fixed sizes in the drawing code are multiplied by it.
+   */
+  scale: number
 }
 
 interface Base {
