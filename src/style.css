@@ -49,9 +49,62 @@ body {
   cursor: grabbing;
 }
 
-body.drop-target #stage {
-  outline: 2px dashed var(--accent);
-  outline-offset: -8px;
+/* Shown while something is dragged over the window: the app blurs behind a drop prompt. */
+#drop-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  /* Never in the way of the drag events underneath. */
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+
+body.drop-target #drop-overlay {
+  opacity: 1;
+}
+
+#drop-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--bg) 40%, transparent);
+}
+
+/*
+ * The app itself is blurred rather than what shows through the overlay: backdrop-filter does
+ * nothing in the desktop app, whose WebKitGTK renders without the GPU on the NVIDIA workaround
+ * (see src-tauri/src/main.rs), while a plain filter works everywhere.
+ */
+body.drop-target :is(#stage, #toolbar, #stylebar, #layers, #zoom, #status) {
+  filter: blur(6px);
+}
+
+#drop-overlay div {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 28px 44px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--panel);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 0.25);
+}
+
+#drop-overlay svg {
+  color: var(--accent);
+}
+
+#drop-overlay strong {
+  font-size: 18px;
+}
+
+#drop-overlay span {
+  color: var(--muted);
 }
 
 #empty {
@@ -450,4 +503,99 @@ dialog.choice button.primary {
   border-color: var(--accent);
   background: var(--accent);
   color: #fff;
+}
+
+/* Below the style bar, which can reach this far right on a narrow window. */
+#layers {
+  position: fixed;
+  top: 116px;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  width: 230px;
+  max-height: calc(100vh - 176px);
+  padding: 10px 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel);
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.15);
+  font-size: 13px;
+}
+
+#layers h2 {
+  margin: 0 6px 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+#layers ol {
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  list-style: none;
+}
+
+#layers li {
+  border-top: 2px solid transparent;
+  border-bottom: 2px solid transparent;
+}
+
+/* Where a dragged layer will land. */
+#layers li.drop-above {
+  border-top-color: var(--accent);
+}
+
+#layers li.drop-below {
+  border-bottom-color: var(--accent);
+}
+
+#layers .layer {
+  /* Full width including its padding, or every row would stick out and the list would scroll sideways. */
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 28px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--fg);
+  font: inherit;
+  text-align: left;
+  cursor: grab;
+  user-select: none;
+}
+
+#layers .layer:hover {
+  background: color-mix(in srgb, var(--fg) 8%, transparent);
+}
+
+#layers .layer.selected {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+#layers .layer .swatch {
+  flex: none;
+  width: 12px;
+  height: 12px;
+}
+
+#layers .label {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+#layers li.none {
+  padding: 6px 8px;
+  color: var(--muted);
+}
+
+/* The paste hint would otherwise show around the edges of the drop prompt. */
+body.drop-target #empty {
+  visibility: hidden;
 }

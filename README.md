@@ -34,6 +34,7 @@ The annotated screenshot above uses most of these:
 - **Sized to the image**: line widths, arrowheads and text scale with the screenshot, so annotations look the same on a small crop and on a 4K capture.
 - **Line endings**: arrows and dimensions can end in a triangle, a sharper pointed head, a tick, or nothing.
 - **Editable objects**: select, move, resize, restyle, duplicate and reorder anything you have drawn, with undo and redo.
+- **Layers**: open the layers panel from the toolbar to see every object in stacking order, select from the list and drag to reorder.
 - **Snapping**: align objects to each other while drawing or editing; toggle it on or off at any time.
 - **Get an image in quickly**: paste from the clipboard, drop a file onto the window, or open one with the file picker.
 - **Export**: PNG, JPG, SVG or PDF, or copy the flattened image straight to the clipboard.

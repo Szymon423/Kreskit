@@ -10,7 +10,7 @@ Most screenshots need a quick edit before they are shared: highlight something, 
 - **Everything stays editable.** Anything placed on the image can be selected later and moved, resized, rotated, restyled (colour, width, opacity, font), reordered, duplicated or deleted. Nothing is baked into the image until export.
 - **CAD-style dimensions.** Pick a dimension tool, drag between two points, type the value. Dimensions have arrows and extension lines, can be moved, stretched and offset, and look consistent and professional. The value is typed by hand; the app does not measure pixels.
 - **Cross-platform desktop app.** Linux, Windows and macOS from one codebase. Linux (Fedora, Wayland) is where it is developed and tested day to day.
-- **Simple UI.** The canvas fills the window. A floating tool strip, a context bar for the selected object's style, a zoom readout. No menus, no panels.
+- **Simple UI.** The canvas fills the window. A floating tool strip, a context bar for the selected object's style, a zoom readout. No menus; the one panel (layers) is hidden until asked for.
 
 ## Decisions already made
 
@@ -31,7 +31,8 @@ Most screenshots need a quick edit before they are shared: highlight something, 
 
 These came out of testing rounds. Do not change them without asking.
 
-- **Tools stay active after drawing**, so several arrows or shapes can be drawn in a row. `V` or `Esc` returns to the selector. The trade-off, accepted: a freshly drawn shape is not auto-selected.
+- **Tools stay active after drawing**, so several arrows or shapes can be drawn in a row.
+- **The object just drawn stays current** until something else happens: the style bar shows and edits it (and the tool remembers the change for the next one), and it shows its usual handles (endpoint dots on lines, arrows and dimensions, a box elsewhere), which can be dragged to adjust it without leaving the tool; a click that lands on a handle adjusts rather than starts a new object. Drawing the next object makes that one current; a click without a drag on the canvas, or switching tools, lets it go. `V` or `Esc` switches to the selector with it selected, ready to move. `Delete` removes it and keeps the tool. This works the same for every tool; for text and dimension values it starts once the typing is confirmed.
 - **Pasting over existing work asks first**: add the image to the canvas (default), replace everything, or cancel. Opening a project over existing work also asks, with Cancel as the default.
 - **Snapping** applies while drawing, while dragging an object, while dragging an endpoint, and while resizing. There is a toolbar toggle (magnet icon, `S` key), remembered between sessions. Holding `Ctrl` gives the opposite of the current setting.
 - **Dimension arrowheads** are plain filled triangles whose tip sits exactly on the end of the dimension line; they must not overshoot the extension lines.
@@ -40,8 +41,10 @@ These came out of testing rounds. Do not change them without asking.
 - **Dimension line width** is limited to 0.5–6 (in the style bar's image-independent units). Other tools keep the wide range (the highlighter needs about 20).
 - **Dimension text** always reads left to right, and top to bottom on vertical dimensions, and sits on the side of the dimension line facing away from the measured object.
 - **Pen and highlighter strokes are lightly smoothed** on release (`SMOOTHING` in `src/editor.ts`).
+- **A layers panel**, hidden by default and opened with a toolbar button, lists every object front to back, with no explanatory captions (Szymon asked for none, to match the rest of the app). Clicking a row selects that object and switches to the selector; Shift or Ctrl+click adds to the selection; dragging a row changes the stacking order.
 - **A reset-view button** sits next to the zoom percentage and does the same as `Ctrl+0`.
 - **`Ctrl+C` always copies the whole flattened image**, never the selected objects; `Ctrl+D` duplicates objects.
 - **One output menu** in the toolbar replaces the separate copy, export and save buttons. It opens on hover (or click) and lists Copy image, Export as PNG/JPG/SVG/PDF and Save editable project.
 - **A clear button** (X, at the right end of the toolbar) empties the canvas and brings back the paste hint. It asks first, with Cancel as the default, because a misclick must not cost the work; `Ctrl+Z` still restores everything afterwards.
+- **Dragging a file over the window** blurs the app and shows a centred card "Drop the image here", without a dashed frame. The blur is a CSS `filter` on the app's own elements: `backdrop-filter` does nothing in the desktop app on the NVIDIA workaround.
 - **The empty-state hint** ("Ctrl+V to paste a screenshot") disappears once an image is loaded or anything is drawn on the empty canvas, and returns when the canvas is empty again.

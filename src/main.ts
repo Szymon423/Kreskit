@@ -14,6 +14,7 @@ import {
   write,
 } from './files'
 import { listenForImages } from './input'
+import { LayersPanel } from './layers'
 import { EMPTY_DOC } from './model'
 import { Store } from './store'
 import { StyleBar } from './stylebar'
@@ -74,6 +75,19 @@ try {
   // Falls back to the default below.
 }
 setSnapping(savedSnapping !== 'false')
+
+const layersButton = $('layers-button')
+const layers = new LayersPanel($('layers'), {
+  select: (id, toggle) => editor.selectFromList(id, toggle),
+  move: (id, targetId, above) => editor.moveObject(id, targetId, above),
+})
+editor.onSelectionChange = (ids) => layers.render(store.doc, ids)
+layersButton.addEventListener('click', () => {
+  layers.open = !layers.open
+  layersButton.classList.toggle('active', layers.open)
+  layers.render(store.doc, editor.selectedIds)
+  layersButton.blur()
+})
 
 const styleBar = new StyleBar($('stylebar'), (patch) => editor.applyStyle(patch))
 editor.onStyleContext = (context) => styleBar.show(context)

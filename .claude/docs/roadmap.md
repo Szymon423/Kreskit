@@ -4,7 +4,7 @@ Last updated: 2026-10-11. Update this file whenever something here changes.
 
 ## Built
 
-- Image in: paste, drag and drop, native open dialog (images and `.kit` projects).
+- Image in: paste, drag and drop (from the file manager through Tauri, and image links from web pages), native open dialog (images and `.kit` projects).
 - View: wheel/pinch zoom at the pointer, Space-drag pan, fit, actual size, reset-view button.
 - Tools: select, rectangle, ellipse, line, arrow (one or two heads), pen, highlighter, text.
 - Line endings for arrows and dimensions: triangle, pointed, tick or none. An arrow is drawn as one filled shape, so its tip is exact and a translucent arrow has an even colour.
@@ -12,6 +12,8 @@ Last updated: 2026-10-11. Update this file whenever something here changes.
 - Editing: move, resize, rotate, multi-select, marquee, duplicate, reorder, delete, nudge, undo/redo.
 - Style bar: colour, fill, width, opacity, font and size; each tool remembers its last style. It also restyles a text or dimension value while it is being typed or re-edited.
 - Sizes follow the image: new objects are scaled by the image's longer side relative to 1000 px (limited to 0.4x–8x), and the style bar shows image-independent values.
+- The object just drawn stays current, so its style can be changed without switching to the selector.
+- Layers panel: toggle in the toolbar, select from the list, drag to reorder.
 - Snapping with guide lines, plus a toggle.
 - Images added on top of the base image as ordinary movable objects.
 - Toolbar: one output menu (copy, export per format, save project) and a clear-everything button.

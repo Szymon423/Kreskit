@@ -70,10 +70,7 @@ const MEDIA_TYPES: Record<string, string> = { jpg: 'image/jpeg', svg: 'image/svg
  * webview's file picker filters by media type and so hides them). Null when cancelled.
  */
 export async function pickFile(): Promise<{ file: File; path: string } | null> {
-  const [{ open }, { readFile }] = await Promise.all([
-    import('@tauri-apps/plugin-dialog'),
-    import('@tauri-apps/plugin-fs'),
-  ])
+  const { open } = await import('@tauri-apps/plugin-dialog')
   const path = await open({
     multiple: false,
     filters: [
@@ -83,11 +80,20 @@ export async function pickFile(): Promise<{ file: File; path: string } | null> {
     ],
   })
   if (!path) return null
+  return { file: await fileFromPath(path), path }
+}
+
+/**
+ * Read a file the user chose, in the open dialog or by dropping it on the window. Tauri lets the
+ * app read exactly those paths and nothing else on disk.
+ */
+export async function fileFromPath(path: string): Promise<File> {
+  const { readFile } = await import('@tauri-apps/plugin-fs')
   const name = path.split(/[\\/]/).pop() ?? path
   // Bytes read from disk carry no media type, and the image decoder is not obliged to guess one.
   const extension = name.split('.').pop()?.toLowerCase() ?? ''
   const type = MEDIA_TYPES[extension] ?? (IMAGE_EXTENSIONS.includes(extension) ? `image/${extension}` : '')
-  return { file: new File([(await readFile(path)) as BlobPart], name, { type }), path }
+  return new File([(await readFile(path)) as BlobPart], name, { type })
 }
 
 /** Put the flattened image on the system clipboard. */

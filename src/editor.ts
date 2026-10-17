@@ -71,6 +71,8 @@ export class Editor {
   snapping = true
   /** Fired with the style the style bar should show, or null when it has nothing to edit. */
   onStyleContext: (context: StyleContext | null) => void = () => {}
+  /** Fired whenever the selection, or the document it belongs to, changes. */
+  onSelectionChange: (ids: ReadonlySet<string>) => void = () => {}
 
   private store: Store
   private viewport: Viewport
@@ -178,6 +180,7 @@ export class Editor {
   setTool(tool: Tool): void {
     this.editing?.finish()
     this.tool = tool
+    // Going to the selector keeps the current object, now with handles; another tool lets it go.
     if (tool !== 'select') this.selection.clear()
     this.stage.container().style.cursor = tool === 'select' ? '' : 'crosshair'
     this.syncSelection()
@@ -355,6 +358,36 @@ export class Editor {
     this.select(copies.map((o) => o.id))
   }
 
+  /**
+   * Select from outside the canvas (the layers panel). This switches to the selector, so the
+   * object gets its handles; `toggle` adds or removes it, as Shift+click does on the canvas.
+   */
+  get selectedIds(): ReadonlySet<string> {
+    return this.selection
+  }
+
+  selectFromList(id: string, toggle: boolean): void {
+    if (this.tool !== 'select') this.setTool('select')
+    const next = new Set(toggle ? this.selection : [])
+    if (toggle && next.has(id)) next.delete(id)
+    else next.add(id)
+    this.select(next)
+  }
+
+  /** Put an object directly in front of (`above`) or behind another one. */
+  moveObject(id: string, targetId: string, above: boolean): void {
+    this.store.update((objects) => {
+      const moved = objects.find((o) => o.id === id)
+      if (!moved) return objects
+      const rest = objects.filter((o) => o.id !== id)
+      const target = rest.findIndex((o) => o.id === targetId)
+      if (target === -1) return objects
+      // Objects are kept back to front, so "in front of" means later in the list.
+      rest.splice(above ? target + 1 : target, 0, moved)
+      return rest
+    })
+  }
+
   /** Move the selection one step (or all the way) towards the front or the back. */
   private reorder(forward: boolean, allTheWay: boolean): void {
     this.store.update((objects) => {
@@ -420,7 +453,8 @@ export class Editor {
     const selecting = this.tool === 'select'
     for (const node of this.nodes.values()) node.draggable(selecting)
 
-    // A lone line or dimension gets endpoint handles instead of a bounding box.
+    // A lone line or dimension gets endpoint handles instead of a bounding box. With a drawing
+    // tool active the selection is the object just drawn, shown with the same handles.
     const line = this.selectedSegment()
     const boxed = line ? [] : [...this.selection].map((id) => this.nodes.get(id)!)
     // Text resizes by font size, so it only gets corner handles that keep its proportions.
@@ -434,6 +468,7 @@ export class Editor {
     this.offsetHandle.visible(line?.type === 'dimension')
     this.placeEndpoints()
     this.emitStyleContext()
+    this.onSelectionChange(this.selection)
   }
 
   /** The style for something about to be drawn: the tool's own, sized to suit the image. */
@@ -476,8 +511,6 @@ export class Editor {
   private editText(obj: TextObject | DimensionObject, isNew: boolean): void {
     const node = this.nodes.get(obj.id)
     const inPlace = obj.type === 'text'
-    // Editing started from a drawing tool goes back to that tool, ready for the next one.
-    const fromSelect = this.tool === 'select'
     if (inPlace) node?.hide()
     this.select([])
     const scale = this.viewport.scale
@@ -512,8 +545,8 @@ export class Editor {
         } else if (text !== obj.text || edited !== obj) {
           this.store.update((objects) => objects.map((o) => (o.id === obj.id ? saved : o)))
         }
-        if (fromSelect) this.select([obj.id])
-        else this.emitStyleContext()
+        // Selected with the selector, or the current object when a drawing tool is still active.
+        this.select([obj.id])
       },
     })
     this.editing = {
@@ -741,6 +774,9 @@ export class Editor {
     }
     let start = this.stage.getRelativePointerPosition()
     if (!start) return
+    // A handle of the object just drawn adjusts it, even with a drawing tool active, rather than
+    // starting a new object under it.
+    if (this.tool !== 'select' && e.target.getLayer() === this.overlayLayer) return
 
     if (this.tool === 'text') {
       const hit = this.objectAt(e.target)
@@ -848,15 +884,21 @@ export class Editor {
       const drawn = gesture.node.getClientRect({ skipStroke: true })
       gesture.node.destroy()
       // getClientRect is in screen pixels, which is the right unit for telling a click from a drag.
-      if (Math.max(drawn.width, drawn.height) < MIN_DRAW) return
+      // A click without a drag adds nothing; it lets go of the current object.
+      if (Math.max(drawn.width, drawn.height) < MIN_DRAW) {
+        this.select([])
+        return
+      }
       let { obj } = gesture
       if (obj.type === 'pen' || obj.type === 'highlighter') {
         // Dropping the hand's jitter leaves few enough points for the curve through them to be smooth.
         obj = { ...obj, points: simplify(obj.points, SMOOTHING / this.viewport.scale) }
       }
-      // The tool stays active, so the next shape can be drawn straight away.
+      // The tool stays active, so the next shape can be drawn straight away, and the new one
+      // becomes the current object that the style bar edits.
       const added = obj
       this.store.update((objects) => [...objects, added])
+      this.select([added.id])
       // A dimension is not much use without its value, so ask for it straight away.
       if (isDimension(added)) this.editText(added, false)
       return

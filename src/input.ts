@@ -1,4 +1,5 @@
-import { isProjectFile, isTauri, parseProject } from './files'
+import { fileFromPath, isProjectFile, isTauri, parseProject } from './files'
+import { DRAG_TYPE as LAYER_DRAG } from './layers'
 import type { Doc } from './model'
 import { isTextTarget } from './viewport'
 
@@ -58,8 +59,26 @@ export function listenForImages(
     }, 60)
   })
 
+  // In the desktop app files dropped from a file manager arrive only through Tauri: the webview
+  // itself gets just their paths, which it is not allowed to read.
+  if (isTauri) {
+    void import('@tauri-apps/api/webview').then(({ getCurrentWebview }) =>
+      getCurrentWebview().onDragDropEvent(({ payload }) => {
+        document.body.classList.toggle('drop-target', payload.type === 'enter' || payload.type === 'over')
+        if (payload.type !== 'drop') return
+        const [path] = payload.paths
+        if (!path) return
+        fileFromPath(path)
+          .then(load)
+          .catch(() => onError('Could not read that file'))
+      }),
+    )
+  }
+
+  // Anything dropped on the window that is not a layer being reordered is taken over here. Left
+  // alone, the webview treats a dropped image or link as a page and navigates away from the app.
   window.addEventListener('dragover', (e) => {
-    if (!e.dataTransfer?.types.includes('Files')) return
+    if (!e.dataTransfer || e.dataTransfer.types.includes(LAYER_DRAG)) return
     e.preventDefault()
     e.dataTransfer.dropEffect = 'copy'
     document.body.classList.add('drop-target')
@@ -68,11 +87,27 @@ export function listenForImages(
     if (e.relatedTarget === null) document.body.classList.remove('drop-target')
   })
   window.addEventListener('drop', (e) => {
+    const data = e.dataTransfer
+    if (!data || data.types.includes(LAYER_DRAG)) return
     e.preventDefault()
     document.body.classList.remove('drop-target')
-    const file = imageFrom(e.dataTransfer) ?? e.dataTransfer?.files[0]
-    if (file) void load(file)
-    else onError('Drop an image or project file')
+    const file = imageFrom(data) ?? data.files[0]
+    if (file) {
+      void load(file)
+      return
+    }
+    // An image dragged out of a web page arrives as its address rather than as a file.
+    const link = droppedLink(data)
+    if (link?.startsWith('http')) {
+      fetch(link)
+        .then((response) => (response.ok ? response.blob() : Promise.reject()))
+        .then(load)
+        .catch(() => onError('Could not download that image; save it first and drop the file'))
+    } else if (link) {
+      onError('Only the file name came through; open it with Ctrl+O instead')
+    } else {
+      onError('Drop an image or project file')
+    }
   })
 
   fileInput.addEventListener('change', () => {
@@ -83,6 +118,12 @@ export function listenForImages(
   })
 
   return load
+}
+
+function droppedLink(data: DataTransfer): string | null {
+  const list = data.getData('text/uri-list') || data.getData('text/plain')
+  const first = list.split(/\r?\n/).find((line) => line && !line.startsWith('#'))
+  return first?.trim() || null
 }
 
 function imageFrom(data: DataTransfer | null): File | null {

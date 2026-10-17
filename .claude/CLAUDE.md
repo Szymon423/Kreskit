@@ -51,6 +51,7 @@ src/stylebar.ts   Context bar for the selected object's style
 src/styles.ts     Per-tool remembered styles
 src/textedit.ts   In-place text editing
 src/dialog.ts     In-app question dialog
+src/layers.ts     Layers panel: list of objects, select and drag to reorder
 src-tauri/        Rust shell: window, plugins, capabilities, bundling
 public/fonts/     DejaVu Sans, embedded into PDF exports
 public/icon.svg   Browser-tab icon of the app
@@ -72,6 +73,7 @@ LICENSE           MIT
 - **Project files (`.kit`) must stay readable.** They were saved as `.shot` until 2026-10-11, and that extension must keep opening. They are JSON with `app`, `version`, the base image and the objects. Files written with `app: "shotmark"` are still accepted. If the format has to change, bump `version` and keep loading the old one.
 - **Sizes are stored in pixels but edited in image-independent units.** Each object's `style.scale` records the factor it was created with (`sizeFactor` in `src/styles.ts`). Tool styles and everything the style bar shows or sends are relative (`toRelative`, `scaleLengths`); objects hold real pixels. Any fixed size in drawing code (a minimum arrowhead, a gap, a hit width) must be multiplied by `style.scale`, or it will look wrong on large and small images.
 - **A dimension is one composite object** with its own handles (two measured points, an offset handle), not a group of lines and text.
+- **Dropped files come through Tauri, not the webview.** `dragDropEnabled` is on in `tauri.conf.json`: WebKitGTK only hands the page a `file://` path for a drop from a file manager, and the page may not read it. Tauri's drop event (`src/input.ts`) gives the path, and the fs plugin allows reading exactly the dropped files. The page's own drop handler stays for the browser version and for images dragged out of web pages. On Windows this setting is known to disable HTML5 drag and drop inside the page, which the layers panel relies on; check that if Windows builds ever happen.
 - **Linux/NVIDIA workaround**: `src-tauri/src/main.rs` disables WebKitGTK's DMABUF renderer when the proprietary NVIDIA driver is present. Without it the app dies at startup on Wayland with "Error 71 (Protocol error)". Do not remove it.
 
 ## Website and browser build
